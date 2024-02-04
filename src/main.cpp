@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 int main() {
+
 	vk::FirstApp app{};
 
 	try {
@@ -16,3 +17,6 @@ int main() {
 
 	return EXIT_SUCCESS;
 }
+
+
+
