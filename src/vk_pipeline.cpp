@@ -2,11 +2,16 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-namespace vk {
 
-	VKPipeline::VKPipeline(const std::string& vertFilePath,
-		const std::string& fragFilePath) {
-		createGraphicsPipeline(vertFilePath, fragFilePath);
+namespace vk{
+
+	VKPipeline::VKPipeline(
+		VKDevice& device,
+		const std::string& vertFilePath,
+		const std::string& fragFilePath,
+		const PipelineConfigInfo& configInfo) : vkDevice{device}
+	{
+		createGraphicsPipeline(vertFilePath, fragFilePath, configInfo);
 	}
 
 	std::vector<char> VKPipeline::readFile(const std::string& filePath) {
@@ -30,12 +35,19 @@ namespace vk {
 	 }
 
 	void VKPipeline::createGraphicsPipeline(const std::string& vertFilePath,
-		const std::string& fragFilePath) {
+		const std::string& fragFilePath, const PipelineConfigInfo& configInfo) {
 		auto vertCode = readFile(vertFilePath);
 		auto fragCode = readFile(fragFilePath);
 
 		std::cout << "Vertex Shader Code Size: " << vertCode.size() << '\n';
 		std::cout << "Fragment Shader Code Size: " << fragCode.size() << '\n';
+
+	}
+
+	void VKPipeline::createShaderModule(const std::vector<char> code, VkShaderModule* shaderModule) {
+		VkShaderModuleCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.size = code.size();
 
 	}
 }
