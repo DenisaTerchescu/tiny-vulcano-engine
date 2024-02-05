@@ -3,6 +3,7 @@
 #include<string>
 #include<vector>
 #include "vk_device.hpp"
+
 namespace vk {
 	class VKPipeline {
 
@@ -10,7 +11,7 @@ namespace vk {
 
 	public:
 		VKPipeline(
-			VKDevice& device, 
+		    VKDevice& device, 
 			const std::string& vertFilePath, 
 			const std::string& fragFilePath, 
 			const PipelineConfigInfo& configInfo);
@@ -24,16 +25,19 @@ namespace vk {
 
 	private:
 		static std::vector<char> readFile(const std::string& filePath);
+		
 		void createGraphicsPipeline(
 			const std::string& vertFilePath,
 			const std::string& fragFilePath,
 			const PipelineConfigInfo& configInfo);
 
-		void createShaderModule(const std::vector<char> code,VkShaderModule* shaderModule );
-		VkDevice& vkDevice;
+		void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule );
+
+		VKDevice& vkDevice;
 		VKPipeline& graphicsPipeline;
 		VkShaderModule vertModule;
 		VkShaderModule fragModule;
+		const PipelineConfigInfo& configInfo;
 
 	};
 }

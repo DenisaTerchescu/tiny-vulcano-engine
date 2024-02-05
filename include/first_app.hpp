@@ -2,6 +2,7 @@
 
 #include "vk_window.hpp"
 #include "vk_pipeline.hpp"
+#include "vk_device.hpp"
 
 namespace vk {
 	class FirstApp {
@@ -14,7 +15,12 @@ namespace vk {
 
 	private:
 		VKWindow window{ WIDTH, HEIGHT, "Cute lil window" };
-		VKPipeline vkPipeline{ "C:/Users/Denisa/Desktop/TinyVulcano/resources/shaders/simple_shader.vert.spv",  "C:/Users/Denisa/Desktop/TinyVulcano/resources/shaders/simple_shader.frag.spv" };
+		VKDevice device{ window };
+		VKPipeline vkPipeline{ 
+			device, 
+			"C:/Users/Denisa/Desktop/TinyVulcano/resources/shaders/simple_shader.vert.spv",  
+			"C:/Users/Denisa/Desktop/TinyVulcano/resources/shaders/simple_shader.frag.spv", 
+			VKPipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
 
 	};
 }
