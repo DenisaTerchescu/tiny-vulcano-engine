@@ -6,7 +6,7 @@ else()
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 endif()
 
-project("TinyVulcano")
+project("TinyVulcano2")
 
 set(ENV{VULKAN_SDK} "D:/Vulkan")
 
@@ -26,10 +26,10 @@ add_subdirectory(thirdparty/glm)                    # math
 # Define MY_SOURCES to be a list of all the source files for my game 
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-add_executable("TinyVulcano" ${MY_SOURCES})
+add_executable("TinyVulcano2" ${MY_SOURCES})
 
-target_compile_definitions("TinyVulcano" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
-target_include_directories("TinyVulcano" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
-target_include_directories("TinyVulcano" PUBLIC "D:/Vulkan/Include/")
+target_compile_definitions("TinyVulcano2" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
+target_include_directories("TinyVulcano2" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
+target_include_directories("TinyVulcano2" PUBLIC "D:/Vulkan/Include/")
 
-target_link_libraries("TinyVulcano" PRIVATE glm glfw stb_image ${Vulkan_LIBRARIES})
+target_link_libraries("TinyVulcano2" PRIVATE glm glfw stb_image ${Vulkan_LIBRARIES})

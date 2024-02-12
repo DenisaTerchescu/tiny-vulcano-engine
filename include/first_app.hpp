@@ -1,26 +1,32 @@
 #pragma once
 
-#include "vk_window.hpp"
-#include "vk_pipeline.hpp"
-#include "vk_device.hpp"
+#include "lve_device.hpp"
+#include "lve_window.hpp"
 
-namespace vk {
-	class FirstApp {
+// std
+#include <memory>
+#include <vector>
 
-	public:
-		static constexpr int WIDTH = 800;
-		static constexpr int HEIGHT = 600;
+namespace lve {
+class FirstApp {
+ public:
+  static constexpr int WIDTH = 800;
+  static constexpr int HEIGHT = 600;
 
-		void run();
+  FirstApp();
+  ~FirstApp();
 
-	private:
-		VKWindow window{ WIDTH, HEIGHT, "Cute lil window" };
-		VKDevice device{ window };
-		VKPipeline vkPipeline{ 
-			device, 
-			"C:/Users/Denisa/Desktop/TinyVulcano/resources/shaders/simple_shader.vert.spv",  
-			"C:/Users/Denisa/Desktop/TinyVulcano/resources/shaders/simple_shader.frag.spv", 
-			VKPipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
+  FirstApp(const FirstApp &) = delete;
+  FirstApp &operator=(const FirstApp &) = delete;
 
-	};
-}
+  void run();
+
+ private:
+  void loadGameObjects();
+
+  LveWindow lveWindow{WIDTH, HEIGHT, "Vulkan Tutorial"};
+  LveDevice lveDevice{lveWindow};
+
+
+};
+}  // namespace lve
