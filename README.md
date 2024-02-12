@@ -1,1 +1,2 @@
-# dante-inferno
+# tiny-inferno
+Work in progress
