@@ -23,7 +23,6 @@ add_subdirectory(thirdparty/glfw-3.3.2)            # window opener
 add_subdirectory(thirdparty/stb_image)              # loading images
 add_subdirectory(thirdparty/glm)                    # math
 
-# Define MY_SOURCES to be a list of all the source files for my game 
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 add_executable("TinyVulcano2" ${MY_SOURCES})
