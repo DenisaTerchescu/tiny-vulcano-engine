@@ -27,6 +27,7 @@ file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/
 
 add_executable("TinyVulcano2" ${MY_SOURCES})
 
+target_compile_features("TinyVulcano2" PRIVATE cxx_std_17)
 target_compile_definitions("TinyVulcano2" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
 target_include_directories("TinyVulcano2" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 target_include_directories("TinyVulcano2" PUBLIC "D:/VulkanSDK/1.3.275.0/Include/")
