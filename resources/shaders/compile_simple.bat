@@ -1,3 +1,6 @@
-D:\Vulkan\Bin\glslc.exe shaders\simple_shader.vert -o shaders\simple_shader.vert.spv
-D:\Vulkan\Bin\glslc.exe shaders\simple_shader.frag -o shaders\simple_shader.frag.spv
+
+set BASE_PATH=%~dp0
+
+D:\VulkanSDK\1.3.275.0\Bin\glslc.exe %BASE_PATH%shader.vert -o %BASE_PATH%shader.vert.spv
+D:\VulkanSDK\1.3.275.0\Bin\glslc.exe %BASE_PATH%shader.frag -o %BASE_PATH%shader.frag.spv
 pause
