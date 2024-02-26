@@ -824,8 +824,8 @@ private:
     }
 
     void createGraphicsPipeline() {
-        auto vertShaderCode = readFile("C:/Users/Denisa/Desktop/TinyVulcano2/resources/shaders/vert.spv");
-        auto fragShaderCode = readFile("C:/Users/Denisa/Desktop/TinyVulcano2/resources/shaders/frag.spv");
+        auto vertShaderCode = readFile("C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/shaders/vert.spv");
+        auto fragShaderCode = readFile("C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/shaders/frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);

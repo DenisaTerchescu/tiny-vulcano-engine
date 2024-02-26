@@ -6,7 +6,7 @@ else()
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 endif()
 
-project("TinyVulcano2")
+project("TinyVulcanoEngine")
 
 set(ENV{VULKAN_SDK} "D:/VulkanSDK/1.3.275.0")
 
@@ -25,11 +25,11 @@ add_subdirectory(thirdparty/glm)                    # math
 
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-add_executable("TinyVulcano2" ${MY_SOURCES})
+add_executable("TinyVulcanoEngine" ${MY_SOURCES})
 
-target_compile_features("TinyVulcano2" PRIVATE cxx_std_17)
-target_compile_definitions("TinyVulcano2" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
-target_include_directories("TinyVulcano2" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
-target_include_directories("TinyVulcano2" PUBLIC "D:/VulkanSDK/1.3.275.0/Include/")
+target_compile_features("TinyVulcanoEngine" PRIVATE cxx_std_17)
+target_compile_definitions("TinyVulcanoEngine" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
+target_include_directories("TinyVulcanoEngine" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
+target_include_directories("TinyVulcanoEngine" PUBLIC "D:/VulkanSDK/1.3.275.0/Include/")
 
-target_link_libraries("TinyVulcano2" PRIVATE glm glfw stb_image ${Vulkan_LIBRARIES})
+target_link_libraries("TinyVulcanoEngine" PRIVATE glm glfw stb_image ${Vulkan_LIBRARIES})
