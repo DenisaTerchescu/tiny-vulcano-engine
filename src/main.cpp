@@ -86,7 +86,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-class HelloTriangleApplication {
+class TinyVulcanoEngine {
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
@@ -1197,10 +1197,10 @@ private:
 };
 
 int main() {
-    HelloTriangleApplication app;
+    TinyVulcanoEngine engine;
 
     try {
-        app.run();
+        engine.run();
     }
     catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
