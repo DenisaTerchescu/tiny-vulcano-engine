@@ -1,2 +1,2 @@
-# tiny-inferno
+# tiny-vulcano-engine
 Work in progress
