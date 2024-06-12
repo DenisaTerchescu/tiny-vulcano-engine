@@ -6,9 +6,9 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <unordered_map>
 #include <GLFW/glfw3native.h>
-#include <cstdint> // Necessary for uint32_t
-#include <limits> // Necessary for std::numeric_limits
-#include <algorithm> // Necessary for std::clamp
+#include <cstdint> 
+#include <limits> 
+#include <algorithm> 
 
 #include <optional>
 #include <iostream>
@@ -345,7 +345,7 @@ private:
         vkQueuePresentKHR(presentQueue, &presentInfo);
 
     }
-
+#pragma region CleanUp
     void cleanup() {
 
         cleanupSwapChain();
@@ -397,7 +397,9 @@ private:
 
         glfwTerminate();
     }
+#pragma endregion CleanUp
 
+#pragma region Window
     void initWindow() {
         glfwInit();
 
@@ -409,12 +411,16 @@ private:
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     }
 
+
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
         auto app = reinterpret_cast<TinyVulcanoEngine*>(glfwGetWindowUserPointer(window));
         app->framebufferResized = true;
 
     }
 
+#pragma endregion Window
+
+#pragma region Instance
     void createInstance() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
@@ -467,6 +473,9 @@ private:
       
        
     }
+#pragma endregion Instance
+
+#pragma region Validation_layers
 
     bool checkValidationLayerSupport() {
         uint32_t layerCount;
@@ -555,6 +564,9 @@ private:
         createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         createInfo.pfnUserCallback = debugCallback;
     }
+#pragma endregion Validation_layers
+
+#pragma region Physical_device
 
     void pickPhysicalDevice() {
         uint32_t deviceCount = 0;
@@ -579,6 +591,47 @@ private:
 
     }
 
+#pragma endregion Physical_device
+
+#pragma region Device_suitable
+    bool isDeviceSuitable(VkPhysicalDevice device) {
+        QueueFamilyIndices indices = findQueueFamilies(device);
+
+        bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+        bool swapChainAdequate = false;
+
+        if (extensionsSupported) {
+            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        }
+
+        VkPhysicalDeviceFeatures supportedFeatures;
+        vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+
+        return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
+    }
+
+
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+        std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+        for (const auto& extension : availableExtensions) {
+            requiredExtensions.erase(extension.extensionName);
+        }
+
+        return requiredExtensions.empty();
+    }
+#pragma endregion Device_suitable
+
+#pragma region Queue_families
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
         QueueFamilyIndices indices;
@@ -611,41 +664,9 @@ private:
 
         return indices;
     }
+#pragma endregion Queue_families
 
-    bool isDeviceSuitable(VkPhysicalDevice device) {
-        QueueFamilyIndices indices = findQueueFamilies(device);
-
-        bool extensionsSupported = checkDeviceExtensionSupport(device);
-
-        bool swapChainAdequate = false;
-        if (extensionsSupported) {
-            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
-            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-        }
-
-        VkPhysicalDeviceFeatures supportedFeatures;
-        vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
-
-
-        return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
-    }
-
-
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
-        uint32_t extensionCount;
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-        std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
-
-        for (const auto& extension : availableExtensions) {
-            requiredExtensions.erase(extension.extensionName);
-        }
-
-        return requiredExtensions.empty();
-    }
+#pragma region Logical_device
 
     void createLogicalDevice() {
 
@@ -710,36 +731,18 @@ private:
 
     }
 
-    void createFramebuffers() {
-        swapChainFramebuffers.resize(swapChainImageViews.size());
+#pragma endregion Logical_device
 
-        for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-            VkImageView attachments[] = {
-                swapChainImageViews[i]
-            };
-
-            VkFramebufferCreateInfo framebufferInfo{};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = renderPass;
-            framebufferInfo.attachmentCount = 1;
-            framebufferInfo.pAttachments = attachments;
-            framebufferInfo.width = swapChainExtent.width;
-            framebufferInfo.height = swapChainExtent.height;
-            framebufferInfo.layers = 1;
-
-            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create framebuffer!");
-            }
-        }
-
-
-    }
+#pragma region Surface
 
     void createSurface() {
         if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
     }
+#pragma endregion Surface
+
+#pragma region Swapchain
 
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
         SwapChainSupportDetails details;
@@ -783,6 +786,7 @@ private:
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
+    // Resolution
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
         if (capabilities.currentExtent.width != (std::numeric_limits<uint32_t>::max)()) {
             return capabilities.currentExtent;
@@ -857,6 +861,9 @@ private:
         swapChainExtent = extent;
 
     }
+#pragma endregion Swapchain
+
+#pragma region Image_views
 
     void createImageViews() {
         swapChainImageViews.resize(swapChainImages.size());
@@ -866,6 +873,10 @@ private:
         }
 
     }
+
+#pragma endregion Image_views
+
+#pragma region Shaders
     static std::vector<char> readFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
@@ -884,6 +895,7 @@ private:
         return buffer;
     }
 
+
     VkShaderModule createShaderModule(const std::vector<char>& code) {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -897,6 +909,10 @@ private:
 
         return shaderModule;
     }
+
+#pragma endregion Shaders
+
+#pragma region Render_pass
 
     void createRenderPass() {
         VkAttachmentDescription colorAttachment{};
@@ -941,6 +957,10 @@ private:
             throw std::runtime_error("failed to create render pass!");
         }
     }
+
+#pragma endregion Render_pass
+
+
     void createDescriptorSetLayout() {
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
         uboLayoutBinding.binding = 0;
@@ -969,6 +989,7 @@ private:
         }
 
     }
+#pragma region Graphics_pipeline
 
     void createGraphicsPipeline() {
         auto vertShaderCode = readFile("C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/shaders/vert.spv");
@@ -1122,6 +1143,37 @@ private:
         vkDestroyShaderModule(device, fragShaderModule, nullptr);
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
+#pragma endregion Graphics_pipeline
+
+#pragma region Framebuffers
+
+    void createFramebuffers() {
+        swapChainFramebuffers.resize(swapChainImageViews.size());
+
+        for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+            VkImageView attachments[] = {
+                swapChainImageViews[i]
+            };
+
+            VkFramebufferCreateInfo framebufferInfo{};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = renderPass;
+            framebufferInfo.attachmentCount = 1;
+            framebufferInfo.pAttachments = attachments;
+            framebufferInfo.width = swapChainExtent.width;
+            framebufferInfo.height = swapChainExtent.height;
+            framebufferInfo.layers = 1;
+
+            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create framebuffer!");
+            }
+        }
+    }
+
+
+#pragma endregion Framebuffers
+
+#pragma region Command_Pool
 
     void createCommandPool() {
         QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
@@ -1136,6 +1188,10 @@ private:
         }
 
     }
+
+#pragma endregion Command_Pool
+
+#pragma region Command_Buffers
 
     void createCommandBuffers() {
         commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
@@ -1213,6 +1269,10 @@ private:
         }
     }
 
+#pragma endregion Command_Buffers
+
+#pragma region Sync_objects
+
     void createSyncObjects() {
         imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -1234,6 +1294,9 @@ private:
             }
         }
     }
+
+#pragma endregion Sync_objects
+
 
     void createDepthResources() {
         VkFormat depthFormat = findDepthFormat();
