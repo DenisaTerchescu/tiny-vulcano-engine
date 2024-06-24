@@ -26,6 +26,10 @@
 		//glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	}
 
+	void TinyWindow::cleanUp() {
+		glfwDestroyWindow(window);
+	}
+
 
 	GLFWwindow* TinyWindow::getWindow() const {
 		return window;

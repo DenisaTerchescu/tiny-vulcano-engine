@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <vector>
 
-using namespace std;
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -19,15 +18,31 @@ const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
 
-
 class TinyInstance {
-	
-	VkInstance instance;
+public:
+    void init();
+    void createInstance();
+    void setupDebugMessenger();
 
-	TinyInstance();
-	~TinyInstance();
-	VkInstance getInstance();
+    void cleanUp();
+    
 
-	std::vector<const char*> getRequiredExtensions();
+    VkInstance getInstance() const;
+    VkDebugUtilsMessengerEXT getDebugMessenger() const;
+
+    std::vector<const char*> getRequiredExtensions();
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData);
+
+    bool checkValidationLayerSupport();
+    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
+
+    VkInstance instance;
+    VkDebugUtilsMessengerEXT debugMessenger;
 
 };

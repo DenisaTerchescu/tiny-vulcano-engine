@@ -13,6 +13,8 @@ const uint32_t HEIGHT = 600;
 		~TinyWindow();
 
 		void initWindow();
+		void cleanUp();
+
 		GLFWwindow* getWindow() const;
 		//void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
