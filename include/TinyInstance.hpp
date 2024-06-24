@@ -30,5 +30,4 @@ class TinyInstance {
 
 	std::vector<const char*> getRequiredExtensions();
 
-
 };
