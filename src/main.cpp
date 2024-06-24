@@ -38,6 +38,7 @@
 #include <glm/gtx/hash.hpp>
 #include "TinyWindow.hpp"
 #include "TinyInstance.hpp"
+#include "TinyDevice.hpp"
 
 
 const std::string MODEL_PATH = "C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/models/room.obj";
@@ -45,9 +46,6 @@ const std::string TEXTURE_PATH = "C:/Users/Denisa/Desktop/TinyVulcanoEngine/reso
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
-const std::vector<const char*> deviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
 std::vector<VkDynamicState> dynamicStates = {
     VK_DYNAMIC_STATE_VIEWPORT,
     VK_DYNAMIC_STATE_SCISSOR
@@ -173,13 +171,13 @@ public:
 private:
     TinyWindow window;
     TinyInstance instance;
-    VkDebugUtilsMessengerEXT debugMessenger;
-    VkSurfaceKHR surface;
+    VkDevice device;
+    TinyDevice tinyDevice;
+    //VkSurfaceKHR surface;
     VkQueue presentQueue;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice device;
-    VkPhysicalDeviceFeatures deviceFeatures{};
     VkQueue graphicsQueue;
+    VkPhysicalDeviceFeatures deviceFeatures{};
     VkSwapchainKHR swapChain;
     std::vector<VkImage> swapChainImages;
     VkFormat swapChainImageFormat;
@@ -227,7 +225,7 @@ private:
 
     void initVulkan() {
         instance.init();
-       createSurface();
+       tinyDevice.createSurface(instance.getInstance(), window.getWindow());
        pickPhysicalDevice();
        createLogicalDevice();
        createSwapChain();
@@ -362,7 +360,7 @@ private:
 
         vkDestroyDevice(device, nullptr);
 
-        vkDestroySurfaceKHR(instance.getInstance(), surface, nullptr);
+        tinyDevice.cleanUp(instance.getInstance());
 
         instance.cleanUp();
 
@@ -450,7 +448,7 @@ private:
         int i = 0;
         for (const auto& queueFamily : queueFamilies) {
             VkBool32 presentSupport = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, tinyDevice.getSurface(), &presentSupport);
 
             if (indices.isComplete()) {
                 break;
@@ -541,11 +539,6 @@ private:
 
 #pragma region Surface
 
-    void createSurface() {
-        if (glfwCreateWindowSurface(instance.getInstance(), window.getWindow(), nullptr, &surface) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create window surface!");
-        }
-    }
 #pragma endregion Surface
 
 #pragma region Swapchain
@@ -553,21 +546,21 @@ private:
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
         SwapChainSupportDetails details;
 
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, tinyDevice.getSurface(), &details.capabilities);
 
         uint32_t formatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, tinyDevice.getSurface(), &formatCount, nullptr);
 
         if (formatCount != 0) {
             details.formats.resize(formatCount);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, tinyDevice.getSurface(), &formatCount, details.formats.data());
         }
         uint32_t presentModeCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, tinyDevice.getSurface(), &presentModeCount, nullptr);
 
         if (presentModeCount != 0) {
             details.presentModes.resize(presentModeCount);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, tinyDevice.getSurface(), &presentModeCount, details.presentModes.data());
         }
 
         return details;
@@ -627,7 +620,7 @@ private:
 
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = surface;
+        createInfo.surface = tinyDevice.getSurface();
         createInfo.minImageCount = imageCount;
         createInfo.imageFormat = surfaceFormat.format;
         createInfo.imageColorSpace = surfaceFormat.colorSpace;
