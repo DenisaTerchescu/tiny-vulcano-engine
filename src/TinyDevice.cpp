@@ -5,6 +5,10 @@ VkSurfaceKHR TinyDevice::getSurface() const {
     return surface;
 }
 
+VkPhysicalDevice TinyDevice::getPhysicalDevice() const {
+    return physicalDevice;
+}
+
 void TinyDevice::createSurface(VkInstance instance, GLFWwindow* window) {
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
