@@ -45,18 +45,18 @@ class TinyDevice {
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice device;
         VkQueue graphicsQueue;
-        VkQueue presentQueue;
+        VkQueue presentationQueue;
 
         void init(const VkInstance& instance, GLFWwindow* window);
         VkSurfaceKHR getSurface() const;
         VkDevice getDevice() const;
         VkPhysicalDevice getPhysicalDevice() const;
         VkQueue getGraphicsQueue() const;
-        VkQueue getPresentQueue() const;
+        VkQueue getPresentationQueue() const;
        
         void createSurface(VkInstance instance, GLFWwindow* window);
         void pickPhysicalDevice(VkInstance vkInstance);
-        //void createLogicalDevice();
+        void createLogicalDevice();
         bool isDeviceSuitable(VkPhysicalDevice device);
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
         bool checkDeviceExtensionSupport(VkPhysicalDevice device);
