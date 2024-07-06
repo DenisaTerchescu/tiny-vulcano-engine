@@ -132,7 +132,6 @@ private:
     TinySwapChain swapChain;
     TinyPipeline pipeline;
 
-   /* std::vector<VkFramebuffer> swapChainFramebuffers;*/
     VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;
     std::vector<VkSemaphore> imageAvailableSemaphores;
