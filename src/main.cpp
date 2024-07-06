@@ -351,7 +351,7 @@ private:
 
             VkFramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = pipeline.renderPass;
+            framebufferInfo.renderPass = swapChain.getRenderPass();
             framebufferInfo.attachmentCount = 1;
             framebufferInfo.pAttachments = attachments;
             framebufferInfo.width = swapChain.getSwapChainExtent().width;
@@ -413,7 +413,7 @@ private:
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = pipeline.renderPass;
+        renderPassInfo.renderPass = swapChain.getRenderPass();
         renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
 
         renderPassInfo.renderArea.offset = { 0, 0 };

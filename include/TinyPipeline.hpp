@@ -59,12 +59,10 @@ public:
     void init(TinyDevice& device, TinySwapChain& swapChain);
     void cleanup(TinyDevice& device);
 
-    VkRenderPass renderPass;
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
 
-    void createRenderPass(TinyDevice& device, TinySwapChain& swapChain);
     void createDescriptorSetLayout(TinyDevice& device);
 
     VkShaderModule createShaderModule(TinyDevice& device, const std::vector<char>& code);

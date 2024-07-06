@@ -24,14 +24,17 @@ public:
     VkExtent2D getSwapChainExtent() const;
     const std::vector<VkImage>& getSwapChainImages() const;
     const std::vector<VkImageView>& getSwapChainImageViews() const;
+    VkRenderPass getRenderPass() const;
 
 private:
+    VkRenderPass renderPass;
     VkSwapchainKHR swapChain;
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
     std::vector<VkImage> swapChainImages;
     std::vector<VkImageView> swapChainImageViews;
 
+    void createRenderPass(TinyDevice& device);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
