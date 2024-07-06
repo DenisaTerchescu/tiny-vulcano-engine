@@ -132,7 +132,7 @@ private:
     TinySwapChain swapChain;
     TinyPipeline pipeline;
 
-    std::vector<VkFramebuffer> swapChainFramebuffers;
+   /* std::vector<VkFramebuffer> swapChainFramebuffers;*/
     VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;
     std::vector<VkSemaphore> imageAvailableSemaphores;
@@ -174,7 +174,7 @@ private:
        swapChain.init(tinyDevice, window.getWindow());
 
        pipeline.init(tinyDevice, swapChain);
-       createFramebuffers();
+       swapChain.createFramebuffers(tinyDevice);
        createCommandPool();
        createDepthResources();
        createTextureImage();
@@ -339,34 +339,6 @@ private:
     }
 #pragma endregion Queue_families
 
-#pragma region Framebuffers
-
-    void createFramebuffers() {
-        swapChainFramebuffers.resize(swapChain.getSwapChainImageViews().size());
-
-        for (size_t i = 0; i < swapChain.getSwapChainImageViews().size(); i++) {
-            VkImageView attachments[] = {
-                swapChain.getSwapChainImageViews()[i]
-            };
-
-            VkFramebufferCreateInfo framebufferInfo{};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = swapChain.getRenderPass();
-            framebufferInfo.attachmentCount = 1;
-            framebufferInfo.pAttachments = attachments;
-            framebufferInfo.width = swapChain.getSwapChainExtent().width;
-            framebufferInfo.height = swapChain.getSwapChainExtent().height;
-            framebufferInfo.layers = 1;
-
-            if (vkCreateFramebuffer(tinyDevice.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create framebuffer!");
-            }
-        }
-    }
-
-
-#pragma endregion Framebuffers
-
 #pragma region Command_Pool
 
     void createCommandPool() {
@@ -414,7 +386,7 @@ private:
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = swapChain.getRenderPass();
-        renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
+        renderPassInfo.framebuffer = swapChain.getSwapChainFramebuffers()[imageIndex];
 
         renderPassInfo.renderArea.offset = { 0, 0 };
         renderPassInfo.renderArea.extent = swapChain.getSwapChainExtent();
@@ -1113,10 +1085,6 @@ private:
 
     void cleanupSwapChain() {
 
-        for (auto framebuffer : swapChainFramebuffers) {
-            vkDestroyFramebuffer(tinyDevice.getDevice(), framebuffer, nullptr);
-        }
-
         swapChain.cleanup(tinyDevice);
 
     }
@@ -1135,7 +1103,7 @@ private:
 
         swapChain.init(tinyDevice, window.getWindow());
 
-        createFramebuffers();
+        swapChain.createFramebuffers(tinyDevice);
     }
 
     void updateUniformBuffer(uint32_t currentImage) {

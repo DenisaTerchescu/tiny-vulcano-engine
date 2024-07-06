@@ -25,14 +25,16 @@ public:
     const std::vector<VkImage>& getSwapChainImages() const;
     const std::vector<VkImageView>& getSwapChainImageViews() const;
     VkRenderPass getRenderPass() const;
+    const std::vector<VkFramebuffer> getSwapChainFramebuffers() const;
 
-private:
+public:
     VkRenderPass renderPass;
     VkSwapchainKHR swapChain;
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
     std::vector<VkImage> swapChainImages;
     std::vector<VkImageView> swapChainImageViews;
+    std::vector<VkFramebuffer> swapChainFramebuffers;
 
     void createRenderPass(TinyDevice& device);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -41,5 +43,7 @@ private:
     void createImageViews(TinyDevice& device);
     VkImageView createImageView(TinyDevice& device, VkImage image, VkFormat format,
         VkImageAspectFlags aspectFlags, uint32_t mipLevels);
+
+    void createFramebuffers(TinyDevice& device);
 };
 

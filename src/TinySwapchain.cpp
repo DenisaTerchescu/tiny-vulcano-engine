@@ -25,6 +25,10 @@ VkRenderPass TinySwapChain::getRenderPass() const {
     return renderPass;
 }
 
+const std::vector<VkFramebuffer> TinySwapChain::getSwapChainFramebuffers() const {
+    return swapChainFramebuffers;
+}
+
 void TinySwapChain::init(TinyDevice& device, GLFWwindow* window) {
     auto swapChainSupport = device.querySwapChainSupport(device.getPhysicalDevice());
 
@@ -85,6 +89,11 @@ void TinySwapChain::init(TinyDevice& device, GLFWwindow* window) {
 }
 
 void TinySwapChain::cleanup(TinyDevice& device) {
+
+    for (auto framebuffer : swapChainFramebuffers) {
+        vkDestroyFramebuffer(device.getDevice(), framebuffer, nullptr);
+    }
+
     for (auto imageView : swapChainImageViews) {
         vkDestroyImageView(device.getDevice(), imageView, nullptr);
     }
@@ -204,6 +213,29 @@ void TinySwapChain::createRenderPass(TinyDevice& device) {
 
     if (vkCreateRenderPass(device.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
         throw std::runtime_error("failed to create render pass!");
+    }
+}
+
+void TinySwapChain::createFramebuffers(TinyDevice& device) {
+    swapChainFramebuffers.resize(swapChainImageViews.size());
+
+    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+        VkImageView attachments[] = {
+            swapChainImageViews[i]
+        };
+
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = renderPass;
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.width = swapChainExtent.width;
+        framebufferInfo.height = swapChainExtent.height;
+        framebufferInfo.layers = 1;
+
+        if (vkCreateFramebuffer(device.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create framebuffer!");
+        }
     }
 }
 
