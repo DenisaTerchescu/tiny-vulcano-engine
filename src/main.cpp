@@ -38,6 +38,7 @@
 #include "TinyDevice.hpp"
 #include "TinySwapChain.hpp"
 #include "TinyPipeline.hpp"
+#include "TinyCommand.hpp"
 
 const std::string MODEL_PATH = "C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/models/room.obj";
 const std::string TEXTURE_PATH = "C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/textures/viking_room.png";
@@ -122,8 +123,8 @@ private:
     TinyDevice tinyDevice;
     TinySwapChain swapChain;
     TinyPipeline pipeline;
+    TinyCommand command;
 
-    VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
@@ -165,7 +166,9 @@ private:
 
        pipeline.init(tinyDevice, swapChain);
        swapChain.createFramebuffers(tinyDevice);
-       createCommandPool();
+
+       command.createCommandPool(tinyDevice);
+
        createDepthResources();
        createTextureImage();
        createTextureImageView();
@@ -276,7 +279,7 @@ private:
             vkDestroyFence(tinyDevice.getDevice(), inFlightFences[i], nullptr);
         }
 
-        vkDestroyCommandPool(tinyDevice.getDevice(), commandPool, nullptr);
+        command.cleanup(tinyDevice);
 
         vkDestroyBuffer(tinyDevice.getDevice(), indexBuffer, nullptr);
         vkFreeMemory(tinyDevice.getDevice(), indexBufferMemory, nullptr);
@@ -294,26 +297,6 @@ private:
     }
 #pragma endregion CleanUp
 
-
-
-#pragma region Command_Pool
-
-    void createCommandPool() {
-        TinyDevice::QueueFamilyIndices queueFamilyIndices = tinyDevice.findQueueFamilies();
-
-        VkCommandPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-
-        if (vkCreateCommandPool(tinyDevice.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create command pool!");
-        }
-
-    }
-
-#pragma endregion Command_Pool
-
 #pragma region Command_Buffers
 
     void createCommandBuffers() {
@@ -321,7 +304,7 @@ private:
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = commandPool;
+        allocInfo.commandPool = command.commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
@@ -683,7 +666,7 @@ private:
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = commandPool;
+        allocInfo.commandPool = command.commandPool;
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -709,7 +692,7 @@ private:
         vkQueueSubmit(tinyDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(tinyDevice.getGraphicsQueue());
 
-        vkFreeCommandBuffers(tinyDevice.getDevice(), commandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(tinyDevice.getDevice(), command.commandPool, 1, &commandBuffer);
     }
 
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
