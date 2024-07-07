@@ -15,11 +15,10 @@ public:
         glm::vec2 texCoord;
     };
 
-    void init(TinyDevice& device);
     void cleanup(TinyDevice& device);
 
-    void createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<Vertex>& vertices);
-    void createIndexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<uint32_t>& indices);
+    void createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<TinyPipeline::vertex>& vertices);
+    void createIndexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<uint16_t>& indices);
 
     void createBuffer(TinyDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);

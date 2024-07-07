@@ -1,9 +1,5 @@
 #include "TinyBuffer.hpp"
 
-void TinyBuffer::init(TinyDevice& device) {
-    // Placeholder for potential initialization logic
-}
-
 void TinyBuffer::cleanup(TinyDevice& device) {
     vkDestroyBuffer(device.getDevice(), vertexBuffer, nullptr);
     vkFreeMemory(device.getDevice(), vertexBufferMemory, nullptr);
@@ -11,7 +7,7 @@ void TinyBuffer::cleanup(TinyDevice& device) {
     vkFreeMemory(device.getDevice(), indexBufferMemory, nullptr);
 }
 
-void TinyBuffer::createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<Vertex>& vertices) {
+void TinyBuffer::createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<TinyPipeline::vertex>& vertices) {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
     VkBuffer stagingBuffer;
@@ -31,7 +27,8 @@ void TinyBuffer::createVertexBuffer(TinyDevice& device, TinyCommand& command, co
     vkFreeMemory(device.getDevice(), stagingBufferMemory, nullptr);
 }
 
-void TinyBuffer::createIndexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<uint32_t>& indices) {
+void TinyBuffer::createIndexBuffer(TinyDevice& device, TinyCommand& command, 
+    const std::vector<uint16_t>& indices) {
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
     VkBuffer stagingBuffer;
@@ -68,7 +65,7 @@ void TinyBuffer::createBuffer(TinyDevice& device, VkDeviceSize size, VkBufferUsa
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-  // allocInfo.memoryTypeIndex = device.findMemoryType(memRequirements.memoryTypeBits, properties);
+   allocInfo.memoryTypeIndex = device.findMemoryType(memRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(device.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate buffer memory!");
@@ -78,13 +75,13 @@ void TinyBuffer::createBuffer(TinyDevice& device, VkDeviceSize size, VkBufferUsa
 }
 
 void TinyBuffer::copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-    //VkCommandBuffer commandBuffer = command.beginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = command.beginSingleTimeCommands(device);
 
-    //VkBufferCopy copyRegion{};
-    //copyRegion.srcOffset = 0;
-    //copyRegion.dstOffset = 0;
-    //copyRegion.size = size;
-    //vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = 0;
+    copyRegion.dstOffset = 0;
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-   // device.endSingleTimeCommands(commandBuffer);
+    command.endSingleTimeCommands(commandBuffer, device);
 }

@@ -9,12 +9,12 @@
 
 
 class TinyPipeline {
-
     std::vector<VkDynamicState> states = {
     VK_DYNAMIC_STATE_VIEWPORT,
     VK_DYNAMIC_STATE_SCISSOR
     };
 
+public:
     struct vertex {
         glm::vec3 pos;
         glm::vec3 color;
@@ -55,7 +55,7 @@ class TinyPipeline {
         }
     };
 
-public:
+
     void init(TinyDevice& device, TinySwapChain& swapChain);
     void cleanup(TinyDevice& device);
 

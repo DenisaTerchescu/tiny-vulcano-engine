@@ -9,16 +9,6 @@
 #include <optional>
 #include <set>
 
-//#ifdef NDEBUG
-//const bool enableValidationLayers = false;
-//#else
-//const bool enableValidationLayers = true;
-//#endif
-//
-//const std::vector<const char*> validationLayers = {
-//    "VK_LAYER_KHRONOS_validation"
-//};
-
 const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
@@ -62,6 +52,7 @@ public:
         SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
         TinyDevice::QueueFamilyIndices findQueueFamilies();
+        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
         void cleanUp(const VkInstance& instance);
 };
