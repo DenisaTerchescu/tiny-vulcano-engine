@@ -13,6 +13,8 @@ void TinyBuffer::cleanupUniformBuffers(TinyDevice& device) {
         vkDestroyBuffer(device.getDevice(), uniformBuffers[i], nullptr);
         vkFreeMemory(device.getDevice(), uniformBuffersMemory[i], nullptr);
     }
+
+    vkDestroyDescriptorPool(device.getDevice(), descriptorPool, nullptr);
 }
 
 void TinyBuffer::createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<TinyPipeline::Vertex>& vertices) {
@@ -177,25 +179,5 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
 
         vkUpdateDescriptorSets(device.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
-
-}
-
-void TinyBuffer::updateUniformBuffer(TinySwapChain& swapChain, uint32_t currentImage) {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-    UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
-
-    ubo.proj[1][1] *= -1;
-
-    memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 
 }

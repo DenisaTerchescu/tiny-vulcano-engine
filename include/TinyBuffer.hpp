@@ -43,8 +43,6 @@ public:
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
 
-    void updateUniformBuffer(TinySwapChain& swapChain, uint32_t currentImage);
-
     const int MAX_FRAMES_IN_FLIGHT = 2;
 };
 
