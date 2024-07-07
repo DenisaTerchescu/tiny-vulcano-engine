@@ -6,6 +6,10 @@
 #include <array>
 #include "TinyDevice.hpp"
 #include "TinySwapchain.hpp"
+#include <iostream>
+
+using namespace std;
+
 
 
 class TinyPipeline {
@@ -15,7 +19,7 @@ class TinyPipeline {
     };
 
 public:
-    struct vertex {
+    struct Vertex {
         glm::vec3 pos;
         glm::vec3 color;
         glm::vec2 texCoord;
@@ -23,7 +27,7 @@ public:
         static VkVertexInputBindingDescription getBindingDescription() {
             VkVertexInputBindingDescription bindingDescription{};
             bindingDescription.binding = 0;
-            bindingDescription.stride = sizeof(vertex);
+            bindingDescription.stride = sizeof(Vertex);
             bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
             return bindingDescription;
@@ -35,22 +39,22 @@ public:
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
             attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[0].offset = offsetof(vertex, pos);
+            attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
             attributeDescriptions[1].binding = 0;
             attributeDescriptions[1].location = 1;
             attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[1].offset = offsetof(vertex, color);
+            attributeDescriptions[1].offset = offsetof(Vertex, color);
 
             attributeDescriptions[2].binding = 0;
             attributeDescriptions[2].location = 2;
             attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-            attributeDescriptions[2].offset = offsetof(vertex, texCoord);
+            attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
             return attributeDescriptions;
         }
 
-        bool operator==(const vertex& other) const {
+        bool operator==(const Vertex& other) const {
             return pos == other.pos && color == other.color && texCoord == other.texCoord;
         }
     };
@@ -69,4 +73,5 @@ public:
     static std::vector<char> readFile(const std::string& filename);
 
     void createGraphicsPipeline(TinyDevice& device, TinySwapChain& swapChain);
+
 };
