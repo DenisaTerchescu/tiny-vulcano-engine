@@ -24,7 +24,7 @@ const std::vector<const char*> deviceExtensions = {
 };
 
 class TinyDevice {
-
+public:
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
@@ -40,7 +40,6 @@ class TinyDevice {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    public:
         VkSurfaceKHR surface;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice device;
@@ -61,6 +60,8 @@ class TinyDevice {
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
         bool checkDeviceExtensionSupport(VkPhysicalDevice device);
         SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+
+        TinyDevice::QueueFamilyIndices findQueueFamilies();
 
         void cleanUp(const VkInstance& instance);
 };

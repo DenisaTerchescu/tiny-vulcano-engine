@@ -15,7 +15,6 @@ public:
 
     const std::vector<VkCommandBuffer>& getCommandBuffers() const;
 
-private:
     void createCommandPool(TinyDevice& device);
     void createCommandBuffers(TinyDevice& device, TinySwapChain& swapChain, TinyPipeline& pipeline);
 

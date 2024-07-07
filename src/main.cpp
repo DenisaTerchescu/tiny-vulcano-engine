@@ -101,15 +101,6 @@ std::vector<uint16_t> indices = {
 
 class TinyVulcanoEngine {
 
-    struct QueueFamilyIndices {
-        std::optional<uint32_t> graphicsFamily;
-        std::optional<uint32_t> presentFamily;
-
-        bool isComplete() {
-            return graphicsFamily.has_value() && presentFamily.has_value();
-        }
-    };
-
     struct UniformBufferObject {
         glm::mat4 model;
         glm::mat4 view;
@@ -303,45 +294,12 @@ private:
     }
 #pragma endregion CleanUp
 
-#pragma region Queue_families
 
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
-        QueueFamilyIndices indices;
-        uint32_t queueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-        int i = 0;
-        for (const auto& queueFamily : queueFamilies) {
-            VkBool32 presentSupport = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, tinyDevice.getSurface(), &presentSupport);
-
-            if (indices.isComplete()) {
-                break;
-            }
-
-            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                indices.graphicsFamily = i;
-            }
-            if (presentSupport) {
-                indices.presentFamily = i;
-            }
-
-
-            i++;
-        }
-
-
-        return indices;
-    }
-#pragma endregion Queue_families
 
 #pragma region Command_Pool
 
     void createCommandPool() {
-        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(tinyDevice.getPhysicalDevice());
+        TinyDevice::QueueFamilyIndices queueFamilyIndices = tinyDevice.findQueueFamilies();
 
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
