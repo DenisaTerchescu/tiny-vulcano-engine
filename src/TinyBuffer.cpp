@@ -51,14 +51,6 @@ void TinyBuffer::createIndexBuffer(TinyDevice& device, TinyCommand& command, con
     vkFreeMemory(device.getDevice(), stagingBufferMemory, nullptr);
 }
 
-VkBuffer TinyBuffer::getVertexBuffer() const {
-    return vertexBuffer;
-}
-
-VkBuffer TinyBuffer::getIndexBuffer() const {
-    return indexBuffer;
-}
-
 void TinyBuffer::createBuffer(TinyDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

@@ -13,10 +13,9 @@ public:
     VkCommandBuffer beginSingleTimeCommands(TinyDevice& device);
     void endSingleTimeCommands(VkCommandBuffer commandBuffer, TinyDevice& device);
 
-    const std::vector<VkCommandBuffer>& getCommandBuffers() const;
 
     void createCommandPool(TinyDevice& device);
-    void createCommandBuffers(TinyDevice& device, TinySwapChain& swapChain, TinyPipeline& pipeline);
+    void createCommandBuffers(TinyDevice& device);
 
     VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;

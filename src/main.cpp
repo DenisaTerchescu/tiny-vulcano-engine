@@ -125,11 +125,12 @@ private:
     TinyPipeline pipeline;
     TinyCommand command;
 
-    std::vector<VkCommandBuffer> commandBuffers;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
     VkFence inFlightFence;
+
+
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
     VkBuffer indexBuffer;
@@ -179,7 +180,7 @@ private:
        createUniformBuffers();
        createDescriptorPool();
        createDescriptorSets();
-       createCommandBuffers();
+       command.createCommandBuffers(tinyDevice);
        createSyncObjects();
     }
 
@@ -201,7 +202,7 @@ private:
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
             framebufferResized = false;
-            recreateSwapChain();
+            swapChain.recreateSwapChain(tinyDevice, window);
             return;
         }
         else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -210,9 +211,9 @@ private:
        
         vkResetFences(tinyDevice.getDevice(), 1, &inFlightFences[currentFrame]);
 
-        vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+        vkResetCommandBuffer(command.commandBuffers[currentFrame], 0);
 
-        recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+        recordCommandBuffer(command.commandBuffers[currentFrame], imageIndex);
 
         updateUniformBuffer(currentFrame);
 
@@ -226,7 +227,7 @@ private:
         submitInfo.pWaitDstStageMask = waitStages;
 
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
+        submitInfo.pCommandBuffers = &command.commandBuffers[currentFrame];
 
         VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
         submitInfo.signalSemaphoreCount = 1;
@@ -256,7 +257,7 @@ private:
 #pragma region CleanUp
     void cleanup() {
 
-        cleanupSwapChain();
+        swapChain.cleanup(tinyDevice);
 
         vkDestroySampler(tinyDevice.getDevice(), textureSampler, nullptr);
         vkDestroyImageView(tinyDevice.getDevice(), textureImageView, nullptr);
@@ -298,20 +299,6 @@ private:
 #pragma endregion CleanUp
 
 #pragma region Command_Buffers
-
-    void createCommandBuffers() {
-        commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = command.commandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
-
-        if (vkAllocateCommandBuffers(tinyDevice.getDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate command buffers!");
-        }
-    }
 
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
         VkCommandBufferBeginInfo beginInfo{};
@@ -662,52 +649,19 @@ private:
 
     }
 
-    VkCommandBuffer beginSingleTimeCommands() {
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = command.commandPool;
-        allocInfo.commandBufferCount = 1;
-
-        VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(tinyDevice.getDevice(), &allocInfo, &commandBuffer);
-
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-        vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-        return commandBuffer;
-    }
-
-    void endSingleTimeCommands(VkCommandBuffer commandBuffer) {
-        vkEndCommandBuffer(commandBuffer);
-
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
-
-        vkQueueSubmit(tinyDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(tinyDevice.getGraphicsQueue());
-
-        vkFreeCommandBuffers(tinyDevice.getDevice(), command.commandPool, 1, &commandBuffer);
-    }
-
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = command.beginSingleTimeCommands(tinyDevice);
 
         VkBufferCopy copyRegion{};
         copyRegion.size = size;
         vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-        endSingleTimeCommands(commandBuffer);
+        command.endSingleTimeCommands(commandBuffer, tinyDevice);
     }
 
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, 
         VkImageLayout newLayout, uint32_t mipLevels) {
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = command.beginSingleTimeCommands(tinyDevice);
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = oldLayout;
@@ -753,11 +707,11 @@ private:
             1, &barrier
         );
 
-        endSingleTimeCommands(commandBuffer);
+        command.endSingleTimeCommands(commandBuffer, tinyDevice);
     }
 
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = command.beginSingleTimeCommands(tinyDevice);
 
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
@@ -785,10 +739,8 @@ private:
             &region
         );
 
-        endSingleTimeCommands(commandBuffer);
+        command.endSingleTimeCommands(commandBuffer, tinyDevice);
     }
-
-
 
     void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
         VkImageCreateInfo imageInfo{};
@@ -902,7 +854,7 @@ private:
             throw std::runtime_error("texture image format does not support linear blitting!");
         }
 
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = command.beginSingleTimeCommands(tinyDevice);
 
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -977,7 +929,7 @@ private:
             0, nullptr,
             1, &barrier);
 
-        endSingleTimeCommands(commandBuffer);
+        command.endSingleTimeCommands(commandBuffer, tinyDevice);
     }
 
 #pragma endregion Mipmap
@@ -1022,29 +974,6 @@ private:
         }
     }
 #pragma endregion Load_model 
-
-    void cleanupSwapChain() {
-
-        swapChain.cleanup(tinyDevice);
-
-    }
-    void recreateSwapChain() {
-
-        int width = 0, height = 0;
-        glfwGetFramebufferSize(window.getWindow(), &width, &height);
-        while (width == 0 || height == 0) {
-            glfwGetFramebufferSize(window.getWindow(), &width, &height);
-            glfwWaitEvents();
-        }
-
-        vkDeviceWaitIdle(tinyDevice.getDevice());
-
-        cleanupSwapChain();
-
-        swapChain.init(tinyDevice, window.getWindow());
-
-        swapChain.createFramebuffers(tinyDevice);
-    }
 
     void updateUniformBuffer(uint32_t currentImage) {
         static auto startTime = std::chrono::high_resolution_clock::now();

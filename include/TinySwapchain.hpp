@@ -36,6 +36,7 @@ public:
         VkImageAspectFlags aspectFlags, uint32_t mipLevels);
 
     void createFramebuffers(TinyDevice& device);
+    void recreateSwapChain(TinyDevice& device, TinyWindow& window);
 
 private:
     VkRenderPass renderPass;

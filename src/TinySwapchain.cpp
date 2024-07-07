@@ -239,3 +239,21 @@ void TinySwapChain::createFramebuffers(TinyDevice& device) {
     }
 }
 
+void TinySwapChain::recreateSwapChain(TinyDevice& device, TinyWindow& window) {
+
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(window.getWindow(), &width, &height);
+    while (width == 0 || height == 0) {
+        glfwGetFramebufferSize(window.getWindow(), &width, &height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(device.getDevice());
+
+    cleanup(device);
+
+    init(device, window.getWindow());
+
+    createFramebuffers(device);
+}
+

@@ -21,9 +21,6 @@ public:
     void createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<Vertex>& vertices);
     void createIndexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<uint32_t>& indices);
 
-    VkBuffer getVertexBuffer() const;
-    VkBuffer getIndexBuffer() const;
-
     void createBuffer(TinyDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
