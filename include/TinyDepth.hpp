@@ -4,6 +4,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include "TinyDevice.hpp"
 #include "TinySwapchain.hpp"
+#include "TinyTexture.hpp"
 
 class TinyDepth {
 public:
@@ -14,9 +15,9 @@ public:
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 
-    void createDepthResources(TinySwapChain& swapChain);
+    void createDepthResources(TinyDevice& device, TinySwapChain& swapChain, TinyTexture& texture);
     VkFormat findSupportedFormat(TinyDevice& device, const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     
-    VkFormat findDepthFormat();
+    VkFormat findDepthFormat(TinyDevice& device);
 
 };

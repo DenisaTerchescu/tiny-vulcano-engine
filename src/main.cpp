@@ -3,13 +3,10 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #define GLFW_EXPOSE_NATIVE_WIN32
-#include <unordered_map>
+
 #include <GLFW/glfw3native.h>
-#include <cstdint> 
-#include <limits> 
-#include <algorithm> 
-#include <iostream>
-#include <stdexcept>
+
+
 #include <cstdlib>
 #include <vector>
 #include <cstring>
@@ -28,8 +25,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
 #include "TinyWindow.hpp"
 #include "TinyInstance.hpp"
 #include "TinyDevice.hpp"
@@ -38,6 +33,7 @@
 #include "TinyCommand.hpp"
 #include "TinyBuffer.hpp"
 #include "TinyTexture.hpp"
+#include "TinyDepth.hpp"
 
 const std::string MODEL_PATH = "C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/models/room.obj";
 
@@ -112,9 +108,7 @@ private:
 
     TinyBuffer tinyBuffer;
 
-    VkImage depthImage;
-    VkDeviceMemory depthImageMemory;
-    VkImageView depthImageView;
+    TinyDepth depth;
 
     TinyTexture texture;
 
@@ -128,13 +122,10 @@ private:
        instance.init();
        tinyDevice.init(instance.getInstance(), window.getWindow());
        swapChain.init(tinyDevice, window.getWindow());
-
        pipeline.init(tinyDevice, swapChain);
        swapChain.createFramebuffers(tinyDevice);
-
        command.createCommandPool(tinyDevice);
-
-       createDepthResources();
+       depth.createDepthResources(tinyDevice, swapChain, texture);
        texture.init(tinyDevice, command, tinyBuffer);
 
        //loadModel();
@@ -217,6 +208,7 @@ private:
 
     }
 #pragma region CleanUp
+
     void cleanup() {
 
         swapChain.cleanup(tinyDevice);
@@ -338,46 +330,6 @@ private:
     }
 
 #pragma endregion Sync_objects
-
-#pragma region Depth
-
-    void createDepthResources() {
-        VkFormat depthFormat = findDepthFormat();
-
-         texture.createImage(tinyDevice, swapChain.getSwapChainExtent().width, swapChain.getSwapChainExtent().height, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-         depthImageView = texture.createImageView(tinyDevice, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
-
-    }
-
-    VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
-        for (VkFormat format : candidates) {
-            VkFormatProperties props;
-            vkGetPhysicalDeviceFormatProperties(tinyDevice.getPhysicalDevice(), format, &props);
-
-            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
-                return format;
-            }
-            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
-                return format;
-            }
-        }
-
-        throw std::runtime_error("failed to find supported format!");
-    }
-
-    VkFormat findDepthFormat() {
-        return findSupportedFormat(
-            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-        );
-    }
-
-    bool hasStencilComponent(VkFormat format) {
-        return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
-    }
-
-#pragma endregion Depth
 
 #pragma region Load_model
 
