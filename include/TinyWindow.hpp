@@ -7,6 +7,7 @@
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
+class TinyEngine;
 
 	class TinyWindow {
 	public:
@@ -17,7 +18,7 @@ const uint32_t HEIGHT = 600;
 		void cleanUp();
 
 		GLFWwindow* getWindow() const;
-		//void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
 		const int width = WIDTH;
 		const int height = HEIGHT;
