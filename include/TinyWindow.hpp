@@ -19,6 +19,7 @@ class TinyEngine;
 
 		GLFWwindow* getWindow() const;
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+		static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 		const int width = WIDTH;
 		const int height = HEIGHT;

@@ -104,7 +104,7 @@ public:
 
     //std::vector<Vertex> vertices;
     //std::vector<uint32_t> indices;
-
+   
     uint32_t currentFrame = 0;
     bool framebufferResized = false;
 
@@ -119,6 +119,8 @@ public:
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     //void loadModel();
+
+    void onKey(int key, int action);
 
     void updateUniformBuffer(uint32_t currentImage);
 

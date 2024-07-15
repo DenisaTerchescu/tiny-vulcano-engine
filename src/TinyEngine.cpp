@@ -55,8 +55,8 @@ void TinyEngine::drawFrame() {
     vkResetCommandBuffer(command.commandBuffers[currentFrame], 0);
 
     recordCommandBuffer(command.commandBuffers[currentFrame], imageIndex);
-
-    updateUniformBuffer(currentFrame);
+    
+     updateUniformBuffer(currentFrame);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -221,13 +221,28 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 //    }
 //}
 
+void TinyEngine::onKey(int key, int action) {
+    const float moveSpeed = 10.0f;
+   
+    //if (key == GLFW_KEY_LEFT) {
+    //    modelPosition.x -= moveSpeed;
+    //}
+    //else if (key == GLFW_KEY_RIGHT) {
+    //    modelPosition.x += moveSpeed;
+    //    
+    //}
+}
+
 void TinyEngine::updateUniformBuffer(uint32_t currentImage) {
+
     static auto startTime = std::chrono::high_resolution_clock::now();
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    //cout << modelPosition.x << '\n';
 
     TinyBuffer::UniformBufferObject ubo{};
+    //ubo.model = glm::translate(glm::mat4(1.0f), modelPosition);
     ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
