@@ -29,17 +29,17 @@ void TinyEngine::initVulkan() {
 
 
 //todo method of tiny engine or sthing
-void gameUpdate(float deltaTime, TinyWindow &window, Input &input)
+void TinyEngine::gameUpdate(float deltaTime, TinyWindow &window, Input &input)
 {
-	auto& input = window.input;
-	const float moveSpeed = 0.1f; //todo multiply by delta time
+	//auto& input = window.input;
+	const float moveSpeed = 0.8f * deltaTime; 
 
 	if (input.keyBoard[Button::Left].held) {
-		//modelPosition.x -= moveSpeed;
+		modelPosition.x -= moveSpeed;
 	}
 
 	if (input.keyBoard[Button::Right].held) {
-		//modelPosition.x += moveSpeed;
+		modelPosition.x += moveSpeed;
 	}
 
 	if (input.keyBoard[Button::A].pressed) {
@@ -67,7 +67,7 @@ void TinyEngine::mainLoop() {
             glfwGetCursorPos(window.window, &x, &y);
             window.input.mousePos = { x,y };
         }
-		//todo get the mouse positions
+		
 
 #pragma region deltaTime
 
@@ -86,7 +86,6 @@ void TinyEngine::mainLoop() {
 #pragma endregion
 
         gameUpdate(deltaTime, window, window.input);
-       
 
         drawFrame();
     }
@@ -292,7 +291,9 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage) {
     ubo.model = glm::rotate(ubo.model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.model = glm::scale(ubo.model, glm::vec3(0.5f, 0.5f, 0.5f));
 
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f), 
+        glm::vec3(0.0f, 0.0f, 1.0f));
 
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
 

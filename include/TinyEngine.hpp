@@ -121,7 +121,7 @@ public:
 
     //void loadModel();
 
-    void onKey(int key, int action);
+    void gameUpdate(float deltaTime, TinyWindow& window, Input& input);
 
     void updateUniformBuffer(uint32_t currentImage);
 
