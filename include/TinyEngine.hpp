@@ -50,6 +50,7 @@ namespace std {
 }
 
 class TinyEngine {
+    glm::vec3 modelPosition = {};
 
     std::vector<TinyPipeline::Vertex> vertices = {
 
@@ -106,7 +107,7 @@ public:
     //std::vector<uint32_t> indices;
    
     uint32_t currentFrame = 0;
-    bool framebufferResized = false;
+    glm::dvec4 d = {};
 
     void initVulkan();
 

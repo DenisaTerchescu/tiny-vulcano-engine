@@ -1,4 +1,5 @@
 #include "TinyEngine.hpp"
+#include <chrono>
 
 void TinyEngine::run() {
     window.initWindow();
@@ -26,9 +27,67 @@ void TinyEngine::initVulkan() {
     tinySync.createSyncObjects(tinyDevice);
 }
 
+
+//todo method of tiny engine or sthing
+void gameUpdate(float deltaTime, TinyWindow &window, Input &input)
+{
+	auto& input = window.input;
+	const float moveSpeed = 0.1f; //todo multiply by delta time
+
+	if (input.keyBoard[Button::Left].held) {
+		//modelPosition.x -= moveSpeed;
+	}
+
+	if (input.keyBoard[Button::Right].held) {
+		//modelPosition.x += moveSpeed;
+	}
+
+	if (input.keyBoard[Button::A].pressed) {
+		std::cout << "Pressed!\n";
+	}
+
+	if (input.keyBoard[Button::A].released) {
+		std::cout << "Released!\n";
+	}
+
+}
+
 void TinyEngine::mainLoop() {
+
+
+	auto stop = std::chrono::high_resolution_clock::now();
+
     while (!glfwWindowShouldClose(window.getWindow())) {
+
         glfwPollEvents();
+		window.input.updateInput();
+
+        {
+            double x = 0, y = 0;
+            glfwGetCursorPos(window.window, &x, &y);
+            window.input.mousePos = { x,y };
+        }
+		//todo get the mouse positions
+
+#pragma region deltaTime
+
+		//long newTime = clock();
+		//float deltaTime = (float)(newTime - lastTime) / CLOCKS_PER_SEC;
+		//lastTime = clock();
+		auto start = std::chrono::high_resolution_clock::now();
+
+		float deltaTime = (std::chrono::duration_cast<std::chrono::nanoseconds>(start - stop)).count() / 1000000000.0;
+		stop = std::chrono::high_resolution_clock::now();
+
+		float augmentedDeltaTime = deltaTime;
+		if (augmentedDeltaTime > 1.f / 10) { augmentedDeltaTime = 1.f / 10; } //clamp so it doesn't get too big
+		if (augmentedDeltaTime < 0) { augmentedDeltaTime = 0; } //in case any wierd thing happens
+
+#pragma endregion
+
+        gameUpdate(deltaTime, window, window.input);
+       
+
         drawFrame();
     }
 
@@ -41,8 +100,8 @@ void TinyEngine::drawFrame() {
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(tinyDevice.getDevice(), swapChain.getSwapChain(), UINT64_MAX, tinySync.imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-        framebufferResized = false;
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.framebufferResized) {
+        window.framebufferResized = false;
         swapChain.recreateSwapChain(tinyDevice, window);
         return;
     }
@@ -221,30 +280,17 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 //    }
 //}
 
-void TinyEngine::onKey(int key, int action) {
-    const float moveSpeed = 10.0f;
-   
-    //if (key == GLFW_KEY_LEFT) {
-    //    modelPosition.x -= moveSpeed;
-    //}
-    //else if (key == GLFW_KEY_RIGHT) {
-    //    modelPosition.x += moveSpeed;
-    //    
-    //}
-}
-
 void TinyEngine::updateUniformBuffer(uint32_t currentImage) {
 
     static auto startTime = std::chrono::high_resolution_clock::now();
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    //cout << modelPosition.x << '\n';
 
     TinyBuffer::UniformBufferObject ubo{};
-    //ubo.model = glm::translate(glm::mat4(1.0f), modelPosition);
-    ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+    ubo.model = glm::translate(glm::mat4(1.0f), modelPosition);
+    ubo.model = glm::rotate(ubo.model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.model = glm::scale(ubo.model, glm::vec3(0.5f, 0.5f, 0.5f));
 
     ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
