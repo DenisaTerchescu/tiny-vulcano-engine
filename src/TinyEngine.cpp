@@ -33,22 +33,31 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow &window, Input &input)
 {
 	//auto& input = window.input;
 	const float moveSpeed = 0.8f * deltaTime; 
+    if (input.rightMouse.held) {
+        if (input.keyBoard[Button::A].held) {
+            cameraPosition.x -= moveSpeed;
+        }
 
-	if (input.keyBoard[Button::Left].held) {
-		modelPosition.x -= moveSpeed;
-	}
+        if (input.keyBoard[Button::D].held) {
+            cameraPosition.x += moveSpeed;
+        }
 
-	if (input.keyBoard[Button::Right].held) {
-		modelPosition.x += moveSpeed;
-	}
+        if (input.keyBoard[Button::W].held) {
+            cameraPosition.z += moveSpeed;
+        }
 
-	if (input.keyBoard[Button::A].pressed) {
-		std::cout << "Pressed!\n";
-	}
+        if (input.keyBoard[Button::S].held) {
+            cameraPosition.z -= moveSpeed;
+        }
 
-	if (input.keyBoard[Button::A].released) {
-		std::cout << "Released!\n";
-	}
+        if (input.keyBoard[Button::E].held) {
+            cameraPosition.y += moveSpeed;
+        }
+
+        if (input.keyBoard[Button::Q].held) {
+            cameraPosition.y -= moveSpeed;
+        }
+    }
 
 }
 
@@ -287,11 +296,11 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage) {
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     TinyBuffer::UniformBufferObject ubo{};
-    ubo.model = glm::translate(glm::mat4(1.0f), modelPosition);
+    ubo.model = glm::translate(glm::mat4(1.0f), {0,0,0});
     ubo.model = glm::rotate(ubo.model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.model = glm::scale(ubo.model, glm::vec3(0.5f, 0.5f, 0.5f));
 
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),
+    ubo.view = glm::lookAt(cameraPosition,
         glm::vec3(0.0f, 0.0f, 0.0f), 
         glm::vec3(0.0f, 0.0f, 1.0f));
 

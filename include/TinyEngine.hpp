@@ -50,7 +50,7 @@ namespace std {
 }
 
 class TinyEngine {
-    glm::vec3 modelPosition = {};
+    glm::vec3 cameraPosition = glm::vec3(2.0f, 2.0f, 2.0f);
 
     std::vector<TinyPipeline::Vertex> vertices = {
 

@@ -19,8 +19,8 @@
 		window = glfwCreateWindow(width, height, "Tiny tiny window", nullptr, nullptr);
 		glfwSetWindowUserPointer(window, this);
 		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-		//glfwSetCursorPosCallback(window, cursorPositionCallback);
-		//glfwSetMouseButtonCallback(window, mouseButtonCallback);
+		glfwSetCursorPosCallback(window, cursorPositionCallback);
+		glfwSetMouseButtonCallback(window, mouseButtonCallback);
 		glfwSetKeyCallback(window, keyCallback);
 	}
 
@@ -143,29 +143,10 @@
 			realWindow->input.keyBoard[Button::LeftAlt].state = state;
 		}
 	}
-
-		
-		//auto engine = reinterpret_cast<TinyEngine*>(glfwGetWindowUserPointer(window));
-		//std::cout << (void*)glfwGetWindowUserPointer(window) << "\n";
-		//
-		//if (engine) {
-		//	engine->onKey(key, action);
-		//}
-	}
-
-
-	void TinyWindow::cleanUp() {
-		glfwDestroyWindow(window);
-	}
-
-
-	GLFWwindow* TinyWindow::getWindow() const {
-		return window;
 	}
 
 	void TinyWindow::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 	{
-		
 		auto realWindow = reinterpret_cast<TinyWindow*>(glfwGetWindowUserPointer(window));
 
 		if (button == GLFW_MOUSE_BUTTON_LEFT)
@@ -184,4 +165,14 @@
 
 		realWindow->input.mousePos.x = static_cast<int>(xpos);
 		realWindow->input.mousePos.y = static_cast<int>(ypos);
+	}
+
+
+	void TinyWindow::cleanUp() {
+		glfwDestroyWindow(window);
+	}
+
+
+	GLFWwindow* TinyWindow::getWindow() const {
+		return window;
 	}
