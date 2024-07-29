@@ -17,9 +17,10 @@
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 		window = glfwCreateWindow(width, height, "Tiny tiny window", nullptr, nullptr);
-		std::cout << "First pointer: " << (void*)this << '\n';
 		glfwSetWindowUserPointer(window, this);
 		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+		//glfwSetCursorPosCallback(window, cursorPositionCallback);
+		//glfwSetMouseButtonCallback(window, mouseButtonCallback);
 		glfwSetKeyCallback(window, keyCallback);
 	}
 
@@ -160,4 +161,27 @@
 
 	GLFWwindow* TinyWindow::getWindow() const {
 		return window;
+	}
+
+	void TinyWindow::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+	{
+		
+		auto realWindow = reinterpret_cast<TinyWindow*>(glfwGetWindowUserPointer(window));
+
+		if (button == GLFW_MOUSE_BUTTON_LEFT)
+		{
+			realWindow->input.leftMouse.state = (action == GLFW_PRESS) ? 1 : 0;
+		}
+		else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+		{
+			realWindow->input.rightMouse.state = (action == GLFW_PRESS) ? 1 : 0;
+		}
+	}
+
+	void TinyWindow::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
+	{
+		auto realWindow = reinterpret_cast<TinyWindow*>(glfwGetWindowUserPointer(window));
+
+		realWindow->input.mousePos.x = static_cast<int>(xpos);
+		realWindow->input.mousePos.y = static_cast<int>(ypos);
 	}
