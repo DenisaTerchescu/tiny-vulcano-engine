@@ -27,40 +27,6 @@ void TinyEngine::initVulkan() {
     tinySync.createSyncObjects(tinyDevice);
 }
 
-
-//todo method of tiny engine or sthing
-void TinyEngine::gameUpdate(float deltaTime, TinyWindow &window, Input &input)
-{
-	//auto& input = window.input;
-	const float moveSpeed = 0.8f * deltaTime; 
-    if (input.rightMouse.held) {
-        if (input.keyBoard[Button::A].held) {
-            cameraPosition.x -= moveSpeed;
-        }
-
-        if (input.keyBoard[Button::D].held) {
-            cameraPosition.x += moveSpeed;
-        }
-
-        if (input.keyBoard[Button::W].held) {
-            cameraPosition.z += moveSpeed;
-        }
-
-        if (input.keyBoard[Button::S].held) {
-            cameraPosition.z -= moveSpeed;
-        }
-
-        if (input.keyBoard[Button::E].held) {
-            cameraPosition.y += moveSpeed;
-        }
-
-        if (input.keyBoard[Button::Q].held) {
-            cameraPosition.y -= moveSpeed;
-        }
-    }
-
-}
-
 void TinyEngine::mainLoop() {
 
 
@@ -287,7 +253,37 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 //        }
 //    }
 //}
+void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, Input& input)
+{
+    const float moveSpeed = 0.8f * deltaTime;
 
+    if (input.keyBoard[Button::A].held) {
+        pos.x += moveSpeed;
+    }
+
+    if (input.keyBoard[Button::D].held) {
+        pos.x -= moveSpeed;
+    }
+
+    if (input.keyBoard[Button::W].held) {
+        pos.z += moveSpeed;
+    }
+
+    if (input.keyBoard[Button::S].held) {
+        pos.z -= moveSpeed;
+    }
+
+    if (input.keyBoard[Button::Q].held) {
+        pos.y += moveSpeed;
+    }
+
+    if (input.keyBoard[Button::E].held) {
+        pos.y -= moveSpeed;
+    }
+
+
+
+}
 void TinyEngine::updateUniformBuffer(uint32_t currentImage) {
 
     static auto startTime = std::chrono::high_resolution_clock::now();
@@ -296,13 +292,12 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage) {
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     TinyBuffer::UniformBufferObject ubo{};
-    ubo.model = glm::translate(glm::mat4(1.0f), {0,0,0});
-    ubo.model = glm::rotate(ubo.model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.model = glm::translate(glm::mat4(1.0f), pos);
     ubo.model = glm::scale(ubo.model, glm::vec3(0.5f, 0.5f, 0.5f));
 
-    ubo.view = glm::lookAt(cameraPosition,
+    ubo.view = glm::lookAt({0,1, -2},
         glm::vec3(0.0f, 0.0f, 0.0f), 
-        glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::vec3(0.0f, 1.0f, 0.0f));
 
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
 
