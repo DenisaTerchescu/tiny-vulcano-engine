@@ -253,6 +253,35 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 //        }
 //    }
 //}
+
+void TinyEngine::lookAround(float deltaTime, float xPos, float yPos) {
+
+    const float constraint = 179.0f;
+
+    yaw += deltaTime * 0.1f * xPos;
+    pitch += deltaTime * 0.1f * yPos; 
+
+    if (yaw > 179.0f) {
+        yaw = 180.0f;
+    }
+    else if (yaw < -179.0f) {
+        yaw = -180.0f;
+    }
+
+    if (pitch > constraint) {
+        pitch = constraint;
+    }
+    else if (pitch < -constraint) {
+        pitch = -constraint;
+    }
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
+
+}
 void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, Input& input)
 {
     const float moveSpeed = 0.8f * deltaTime;
@@ -281,6 +310,12 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, Input& input)
         pos.y -= moveSpeed;
     }
 
+    if (input.rightMouse.held) {
+        float xPos = input.mousePos.x;
+        float yPos = input.mousePos.y;
+
+        lookAround(deltaTime, xPos, yPos);
+    }
 
 
 }
@@ -296,7 +331,7 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage) {
     ubo.model = glm::scale(ubo.model, glm::vec3(0.5f, 0.5f, 0.5f));
 
     ubo.view = glm::lookAt({0,1, -2},
-        glm::vec3(0.0f, 0.0f, 0.0f), 
+        glm::vec3(0.0f, 0.0f, 0.0f) + cameraFront, 
         glm::vec3(0.0f, 1.0f, 0.0f));
 
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);

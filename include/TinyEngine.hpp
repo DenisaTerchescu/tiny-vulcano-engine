@@ -51,6 +51,9 @@ namespace std {
 
 class TinyEngine {
     glm::vec3 pos = { 0,0,0 };
+    glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
+    float yaw = 90.0f; 
+    float pitch = 0.0f; 
 
     std::vector<TinyPipeline::Vertex> vertices = {
 
@@ -107,7 +110,6 @@ public:
     //std::vector<uint32_t> indices;
    
     uint32_t currentFrame = 0;
-    glm::dvec4 d = {};
 
     void initVulkan();
 
@@ -124,5 +126,7 @@ public:
     void gameUpdate(float deltaTime, TinyWindow& window, Input& input);
 
     void updateUniformBuffer(uint32_t currentImage);
+
+    void lookAround(float deltaTime, float xPos, float yPos);
 
 };
