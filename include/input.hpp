@@ -70,6 +70,8 @@ struct Input {
 	Button rightMouse = {};
 
 	glm::ivec2 mousePos = {};
+	glm::ivec2 lastPos = {};
+	glm::ivec2 delta = {};
 
 	void resetInput()
 	{

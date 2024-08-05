@@ -22,6 +22,9 @@
 		glfwSetCursorPosCallback(window, cursorPositionCallback);
 		glfwSetMouseButtonCallback(window, mouseButtonCallback);
 		glfwSetKeyCallback(window, keyCallback);
+
+		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 	}
 
 	void TinyWindow::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -162,9 +165,10 @@
 	void TinyWindow::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
 	{
 		auto realWindow = reinterpret_cast<TinyWindow*>(glfwGetWindowUserPointer(window));
-
+		realWindow->input.lastPos = realWindow->input.mousePos;
 		realWindow->input.mousePos.x = static_cast<int>(xpos);
 		realWindow->input.mousePos.y = static_cast<int>(ypos);
+		realWindow->input.delta = realWindow->input.mousePos - realWindow->input.lastPos;
 	}
 
 
