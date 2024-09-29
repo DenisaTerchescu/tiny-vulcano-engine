@@ -65,18 +65,10 @@ void TinyEngine::mainLoop() {
 		if (augmentedDeltaTime > 1.f / 10) { augmentedDeltaTime = 1.f / 10; } //clamp so it doesn't get too big
 		if (augmentedDeltaTime < 0) { augmentedDeltaTime = 0; } //in case any wierd thing happens
 
+        calculateFPS(deltaTime);
 
 #pragma endregion
 
-#pragma region FPS_counter
-        {
-            auto currentTime = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<float> delta = currentTime - previousTime;
-            previousTime = currentTime;
-            calculateFPS(delta.count());
-        }
-
-#pragma endregion
 
         gameUpdate(deltaTime, window, window.input);
 
