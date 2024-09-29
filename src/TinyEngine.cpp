@@ -53,9 +53,6 @@ void TinyEngine::mainLoop() {
 
 #pragma region deltaTime
 
-		//long newTime = clock();
-		//float deltaTime = (float)(newTime - lastTime) / CLOCKS_PER_SEC;
-		//lastTime = clock();
 		auto start = std::chrono::high_resolution_clock::now();
 
 		float deltaTime = (std::chrono::duration_cast<std::chrono::nanoseconds>(start - stop)).count() / 1000000000.0;
