@@ -66,6 +66,7 @@ void TinyEngine::mainLoop() {
 
 #pragma endregion
 
+
         gameUpdate(deltaTime, window, window.input);
 
         drawFrame();
