@@ -8,7 +8,7 @@ endif()
 
 project("TinyVulcanoEngine")
 
-set(ENV{VULKAN_SDK} "D:/VulkanSDK/1.3.275.0")
+set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.290.0")
 
 # Move find_package command after project
 find_package(Vulkan REQUIRED)
@@ -31,6 +31,6 @@ add_executable("TinyVulcanoEngine" ${MY_SOURCES})
 target_compile_features("TinyVulcanoEngine" PRIVATE cxx_std_17)
 target_compile_definitions("TinyVulcanoEngine" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
 target_include_directories("TinyVulcanoEngine" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
-target_include_directories("TinyVulcanoEngine" PUBLIC "D:/VulkanSDK/1.3.275.0/Include/")
+target_include_directories("TinyVulcanoEngine" PUBLIC "C:/VulkanSDK/1.3.290.0/Include/")
 
 target_link_libraries("TinyVulcanoEngine" PRIVATE glm glfw stb_image tinyobjloader ${Vulkan_LIBRARIES})

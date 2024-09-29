@@ -36,11 +36,13 @@ void TinyEngine::mainLoop() {
 
 
 	auto stop = std::chrono::high_resolution_clock::now();
+	auto previousTime = std::chrono::high_resolution_clock::now();
 
     while (!glfwWindowShouldClose(window.getWindow())) {
 
         glfwPollEvents();
 		window.input.updateInput();
+        
 
         {
             double x = 0, y = 0;
@@ -62,6 +64,17 @@ void TinyEngine::mainLoop() {
 		float augmentedDeltaTime = deltaTime;
 		if (augmentedDeltaTime > 1.f / 10) { augmentedDeltaTime = 1.f / 10; } //clamp so it doesn't get too big
 		if (augmentedDeltaTime < 0) { augmentedDeltaTime = 0; } //in case any wierd thing happens
+
+
+#pragma endregion
+
+#pragma region FPS_counter
+        {
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<float> delta = currentTime - previousTime;
+            previousTime = currentTime;
+            calculateFPS(delta.count());
+        }
 
 #pragma endregion
 
@@ -258,6 +271,20 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 //        }
 //    }
 //}
+
+void TinyEngine::calculateFPS(float deltaTime) {
+    frameCount++;
+    timeAccumulator += deltaTime;
+
+    if (timeAccumulator >= fpsUpdateInterval) {
+        fps = frameCount / timeAccumulator;
+
+
+        frameCount = 0;
+        timeAccumulator = 0.0f;
+
+    }
+}
 
 void TinyEngine::lookAround(float deltaTime, float xPos, float yPos) {
 

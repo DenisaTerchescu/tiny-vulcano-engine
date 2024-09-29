@@ -88,6 +88,11 @@ class TinyEngine {
         3, 2, 6,
         6, 7, 3
     };
+
+    int frameCount = 0;
+    float fps = 0.0f;
+    float fpsUpdateInterval = 1.0f; 
+    float timeAccumulator = 0.0f;
 public:
     void run();
 
@@ -128,5 +133,7 @@ public:
     void updateUniformBuffer(uint32_t currentImage);
 
     void lookAround(float deltaTime, float xPos, float yPos);
+
+    void calculateFPS(float deltaTime);
 
 };
