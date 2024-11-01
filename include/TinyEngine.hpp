@@ -130,7 +130,7 @@ public:
 
     void gameUpdate(float deltaTime, TinyWindow& window, Input& input);
 
-    void updateUniformBuffer(uint32_t currentImage);
+    void updateUniformBuffer(uint32_t currentImage, const glm::mat4& modelMatrix);
 
     void lookAround(float deltaTime, float xPos, float yPos);
 

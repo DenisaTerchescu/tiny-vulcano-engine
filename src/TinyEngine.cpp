@@ -35,13 +35,13 @@ void TinyEngine::initVulkan() {
 void TinyEngine::mainLoop() {
 
 
-	auto stop = std::chrono::high_resolution_clock::now();
-	auto previousTime = std::chrono::high_resolution_clock::now();
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto previousTime = std::chrono::high_resolution_clock::now();
 
     while (!glfwWindowShouldClose(window.getWindow())) {
 
         glfwPollEvents();
-		window.input.updateInput();
+        window.input.updateInput();
         
 
         {
@@ -49,18 +49,18 @@ void TinyEngine::mainLoop() {
             glfwGetCursorPos(window.window, &x, &y);
             window.input.mousePos = { x,y };
         }
-		
+        
 
 #pragma region deltaTime
 
-		auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
 
-		float deltaTime = (std::chrono::duration_cast<std::chrono::nanoseconds>(start - stop)).count() / 1000000000.0;
-		stop = std::chrono::high_resolution_clock::now();
+        float deltaTime = (std::chrono::duration_cast<std::chrono::nanoseconds>(start - stop)).count() / 1000000000.0;
+        stop = std::chrono::high_resolution_clock::now();
 
-		float augmentedDeltaTime = deltaTime;
-		if (augmentedDeltaTime > 1.f / 10) { augmentedDeltaTime = 1.f / 10; } //clamp so it doesn't get too big
-		if (augmentedDeltaTime < 0) { augmentedDeltaTime = 0; } //in case any wierd thing happens
+        float augmentedDeltaTime = deltaTime;
+        if (augmentedDeltaTime > 1.f / 10) { augmentedDeltaTime = 1.f / 10; } //clamp so it doesn't get too big
+        if (augmentedDeltaTime < 0) { augmentedDeltaTime = 0; } //in case any wierd thing happens
 
         calculateFPS(deltaTime);
 
@@ -96,7 +96,11 @@ void TinyEngine::drawFrame() {
 
     recordCommandBuffer(command.commandBuffers[currentFrame], imageIndex);
     
-     updateUniformBuffer(currentFrame);
+
+    glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), pos);
+    cubeModel = glm::scale(cubeModel, glm::vec3(3.0f, 2.2f, 0.5f));
+
+     updateUniformBuffer(currentFrame, cubeModel);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -343,14 +347,12 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, Input& input)
         float xPos = input.delta.x;
         float yPos = input.delta.y;
 
-        std::cout << input.lastPos.x << " " << xPos << '\n';
-
         lookAround(deltaTime, xPos, yPos);
     }
 
 
 }
-void TinyEngine::updateUniformBuffer(uint32_t currentImage) {
+void TinyEngine::updateUniformBuffer(uint32_t currentImage, const glm::mat4& modelMatrix) {
 
     static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -358,10 +360,9 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage) {
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     TinyBuffer::UniformBufferObject ubo{};
-    ubo.model = glm::translate(glm::mat4(1.0f), pos);
-    ubo.model = glm::scale(ubo.model, glm::vec3(0.5f, 0.5f, 0.5f));
+    ubo.model = modelMatrix;
 
-    glm::vec3 pos(0, 1, -2);
+    glm::vec3 pos(0, 0.5f, -6);
 
     ubo.view = glm::lookAt({ pos },
         glm::vec3(pos) + cameraFront,
