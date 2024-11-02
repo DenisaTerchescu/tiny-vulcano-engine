@@ -15,6 +15,7 @@ public:
         glm::mat4 model;
         glm::mat4 view;
         glm::mat4 proj;
+        uint32_t useTexture;
     };
 
     void cleanup(TinyDevice& device);

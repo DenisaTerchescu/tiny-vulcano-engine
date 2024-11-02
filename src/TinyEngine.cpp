@@ -100,7 +100,7 @@ void TinyEngine::drawFrame() {
     glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), pos);
     cubeModel = glm::scale(cubeModel, glm::vec3(3.0f, 2.2f, 0.5f));
 
-     updateUniformBuffer(currentFrame, cubeModel);
+     updateUniformBuffer(currentFrame, cubeModel, true);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -352,7 +352,8 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, Input& input)
 
 
 }
-void TinyEngine::updateUniformBuffer(uint32_t currentImage, const glm::mat4& modelMatrix) {
+void TinyEngine::updateUniformBuffer(uint32_t currentImage, 
+    const glm::mat4& modelMatrix, bool useTexture) {
 
     static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -361,6 +362,7 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage, const glm::mat4& mod
 
     TinyBuffer::UniformBufferObject ubo{};
     ubo.model = modelMatrix;
+    ubo.useTexture = static_cast<uint32_t>(useTexture);
 
     glm::vec3 pos(0, 0.5f, -6);
 
