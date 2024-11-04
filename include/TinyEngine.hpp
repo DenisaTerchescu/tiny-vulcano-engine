@@ -24,6 +24,7 @@
 //#define TINYOBJLOADER_IMPLEMENTATION
 //#include <tiny_obj_loader.h>
 
+#include "TinyMathLibrary.hpp"
 #include "TinyWindow.hpp"
 #include "TinyInstance.hpp"
 #include "TinyDevice.hpp"
@@ -34,6 +35,7 @@
 #include "TinyTexture.hpp"
 #include "TinyDepth.hpp"
 #include "TinySync.hpp"
+
 
 const std::string MODEL_PATH = "C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/models/room.obj";
 
@@ -50,6 +52,7 @@ namespace std {
 }
 
 class TinyEngine {
+    
     glm::vec3 glassContainerPos = { 0,0,0 };
 
     struct Camera {
@@ -115,6 +118,7 @@ public:
 
     TinyTexture texture;
     Camera camera;
+    TinyMathLibrary tinyMathLibrary;
 
     //std::vector<Vertex> vertices;
     //std::vector<uint32_t> indices;
@@ -130,8 +134,6 @@ public:
     void cleanup();
 
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-
-    //void loadModel();
 
     void gameUpdate(float deltaTime, TinyWindow& window, TinyInput& input);
 

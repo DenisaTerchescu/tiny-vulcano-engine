@@ -97,8 +97,8 @@ void TinyEngine::drawFrame() {
     recordCommandBuffer(command.commandBuffers[currentFrame], imageIndex);
     
 
-    glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glassContainerPos);
-    cubeModel = glm::scale(cubeModel, glm::vec3(3.0f, 2.2f, 0.5f));
+    glm::mat4 cubeModel = tinyMathLibrary.Translate(glassContainerPos.x, glassContainerPos.y, glassContainerPos.z);
+    cubeModel = cubeModel * tinyMathLibrary.Scale(3.0f, 2.2f, 0.5f);
 
      updateUniformBuffer(currentFrame, cubeModel, true);
 
@@ -227,52 +227,12 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     }
 }
 
-//void TinyEngine::loadModel() {
-//    tinyobj::attrib_t attrib;
-//    std::vector<tinyobj::shape_t> shapes;
-//    std::vector<tinyobj::material_t> materials;
-//    std::string warn, err;
-//
-//    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
-//        throw std::runtime_error(warn + err);
-//    }
-//
-//    std::unordered_map<TinyPipeline::Vertex, uint32_t> uniqueVertices{};
-//
-//    for (const auto& shape : shapes) {
-//        for (const auto& index : shape.mesh.indices) {
-//            TinyPipeline::Vertex vertex{};
-//            vertex.pos = {
-//                attrib.vertices[3 * index.vertex_index + 0],
-//                attrib.vertices[3 * index.vertex_index + 1],
-//                attrib.vertices[3 * index.vertex_index + 2]
-//            };
-//
-//            vertex.texCoord = {
-//                attrib.texcoords[2 * index.texcoord_index + 0],
-//                1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-//            };
-//
-//            vertex.color = { 1.0f, 1.0f, 1.0f };
-//
-//            if (uniqueVertices.count(vertex) == 0) {
-//                uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-//                vertices.push_back(vertex);
-//            }
-//
-//            indices.push_back(uniqueVertices[vertex]);
-//        }
-//    }
-//}
-
 void TinyEngine::calculateFPS(float deltaTime) {
     frameCount++;
     timeAccumulator += deltaTime;
 
     if (timeAccumulator >= fpsUpdateInterval) {
         fps = frameCount / timeAccumulator;
-
-
         frameCount = 0;
         timeAccumulator = 0.0f;
 
@@ -298,7 +258,6 @@ void TinyEngine::lookAround(float deltaTime, float xPos, float yPos) {
     front.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
     front.y = sin(glm::radians(camera.pitch));
     front.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-    
     camera.cameraFront = glm::normalize(front);
 
 }
@@ -358,12 +317,12 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage,
     ubo.model = modelMatrix;
     ubo.useTexture = static_cast<uint32_t>(useTexture);
 
-
     ubo.view = glm::lookAt({ camera.pos },
         glm::vec3(camera.pos) + camera.cameraFront,
         glm::vec3(0.0f, 1.0f, 0.0f));
 
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
+    //ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
+    ubo.proj = tinyMathLibrary.Perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
 
     ubo.proj[1][1] *= -1;
 
