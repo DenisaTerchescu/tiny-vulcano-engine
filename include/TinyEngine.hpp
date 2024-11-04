@@ -50,10 +50,14 @@ namespace std {
 }
 
 class TinyEngine {
-    glm::vec3 pos = { 0,0,0 };
-    glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
-    float yaw = 90.0f; 
-    float pitch = 0.0f; 
+    glm::vec3 glassContainerPos = { 0,0,0 };
+
+    struct Camera {
+        glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
+        float yaw = 90.0f;
+        float pitch = 0.0f;
+        glm::vec3 pos = { 0, 0.5f, -6 };
+    };
 
     std::vector<TinyPipeline::Vertex> vertices = {
 
@@ -110,6 +114,7 @@ public:
     TinyDepth depth;
 
     TinyTexture texture;
+    Camera camera;
 
     //std::vector<Vertex> vertices;
     //std::vector<uint32_t> indices;

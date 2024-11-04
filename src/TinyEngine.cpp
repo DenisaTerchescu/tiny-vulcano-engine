@@ -58,9 +58,9 @@ void TinyEngine::mainLoop() {
         float deltaTime = (std::chrono::duration_cast<std::chrono::nanoseconds>(start - stop)).count() / 1000000000.0;
         stop = std::chrono::high_resolution_clock::now();
 
-        float augmentedDeltaTime = deltaTime;
-        if (augmentedDeltaTime > 1.f / 10) { augmentedDeltaTime = 1.f / 10; } //clamp so it doesn't get too big
-        if (augmentedDeltaTime < 0) { augmentedDeltaTime = 0; } //in case any wierd thing happens
+        float optimizedDeltaTime = deltaTime;
+        if (optimizedDeltaTime > 1.f / 10) { optimizedDeltaTime = 1.f / 10; } // bugfix
+        if (optimizedDeltaTime < 0) { optimizedDeltaTime = 0; } 
 
         calculateFPS(deltaTime);
 
@@ -97,7 +97,7 @@ void TinyEngine::drawFrame() {
     recordCommandBuffer(command.commandBuffers[currentFrame], imageIndex);
     
 
-    glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), pos);
+    glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glassContainerPos);
     cubeModel = glm::scale(cubeModel, glm::vec3(3.0f, 2.2f, 0.5f));
 
      updateUniformBuffer(currentFrame, cubeModel, true);
@@ -283,34 +283,23 @@ void TinyEngine::lookAround(float deltaTime, float xPos, float yPos) {
 
     const float constraint = 179.0f;
 
-    yaw += 3 * deltaTime  * xPos;
-    pitch += 3 * deltaTime  * yPos; 
+    camera.yaw += 3 * deltaTime  * xPos;
+    camera.pitch += 3 * deltaTime  * yPos; 
 
-    if (yaw > 360) {
-        yaw -= 360;
+    if (camera.yaw > 360) {
+        camera.yaw -= 360;
     }
 
-    if (yaw < -360) {
-        yaw += 360;
+    if (camera.yaw < -360) {
+        camera.yaw += 360;
     }
-
-
-    //if (pitch > constraint) {
-    //    pitch = constraint;
-    //}
-    //else if (pitch < -constraint) {
-    //    pitch = -constraint;
-    //}
-
-    //glm::vec4 front = {0,0, -1, 1};
-   // front = glm::rotate(glm::radians(yaw), glm::vec3{ 0,1,0 }) * front;
 
     glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+    front.y = sin(glm::radians(camera.pitch));
+    front.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
     
-    cameraFront = glm::normalize(front);
+    camera.cameraFront = glm::normalize(front);
    
 
 }
@@ -319,27 +308,27 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, Input& input)
     const float moveSpeed = 0.8f * deltaTime;
 
     if (input.keyBoard[Button::A].held) {
-        pos.x += moveSpeed;
+        glassContainerPos.x += moveSpeed;
     }
 
     if (input.keyBoard[Button::D].held) {
-        pos.x -= moveSpeed;
+        glassContainerPos.x -= moveSpeed;
     }
 
     if (input.keyBoard[Button::W].held) {
-        pos.z += moveSpeed;
+        glassContainerPos.z += moveSpeed;
     }
 
     if (input.keyBoard[Button::S].held) {
-        pos.z -= moveSpeed;
+        glassContainerPos.z -= moveSpeed;
     }
 
     if (input.keyBoard[Button::Q].held) {
-        pos.y += moveSpeed;
+        glassContainerPos.y += moveSpeed;
     }
 
     if (input.keyBoard[Button::E].held) {
-        pos.y -= moveSpeed;
+        glassContainerPos.y -= moveSpeed;
     }
 
     if (input.rightMouse.held) {
@@ -364,10 +353,9 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage,
     ubo.model = modelMatrix;
     ubo.useTexture = static_cast<uint32_t>(useTexture);
 
-    glm::vec3 pos(0, 0.5f, -6);
 
-    ubo.view = glm::lookAt({ pos },
-        glm::vec3(pos) + cameraFront,
+    ubo.view = glm::lookAt({ camera.pos },
+        glm::vec3(camera.pos) + camera.cameraFront,
         glm::vec3(0.0f, 1.0f, 0.0f));
 
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);

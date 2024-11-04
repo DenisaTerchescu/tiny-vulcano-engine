@@ -7,7 +7,7 @@ struct Button
 	char pressed = 0;
 	char held = 0;
 	char released = 0;
-	char state = -1; //for internal use
+	char state = -1;
 
 	enum
 	{
@@ -25,7 +25,7 @@ struct Button
 		Tab,
 		LeftShift,
 		LeftAlt,
-		BUTTONS_COUNT, //
+		BUTTONS_COUNT, 
 	};
 
     void updateButton()
