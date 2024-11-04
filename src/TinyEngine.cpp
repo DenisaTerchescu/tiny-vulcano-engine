@@ -41,7 +41,7 @@ void TinyEngine::mainLoop() {
     while (!glfwWindowShouldClose(window.getWindow())) {
 
         glfwPollEvents();
-        window.input.updateInput();
+        window.input.updateTinyInput();
         
 
         {
@@ -300,35 +300,40 @@ void TinyEngine::lookAround(float deltaTime, float xPos, float yPos) {
     front.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
     
     camera.cameraFront = glm::normalize(front);
-   
 
 }
-void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, Input& input)
+void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& input)
 {
     const float moveSpeed = 0.8f * deltaTime;
 
-    if (input.keyBoard[Button::A].held) {
-        glassContainerPos.x += moveSpeed;
+    if (input.keyBoard[TinyButton::A].held) {
+        //glassContainerPos.x += moveSpeed;
+        camera.pos.x += moveSpeed;
     }
 
-    if (input.keyBoard[Button::D].held) {
-        glassContainerPos.x -= moveSpeed;
+    if (input.keyBoard[TinyButton::D].held) {
+        //glassContainerPos.x -= moveSpeed;
+        camera.pos.x -= moveSpeed;
     }
 
-    if (input.keyBoard[Button::W].held) {
-        glassContainerPos.z += moveSpeed;
+    if (input.keyBoard[TinyButton::W].held) {
+        //glassContainerPos.z += moveSpeed;
+        camera.pos.z += moveSpeed;
     }
 
-    if (input.keyBoard[Button::S].held) {
-        glassContainerPos.z -= moveSpeed;
+    if (input.keyBoard[TinyButton::S].held) {
+        //glassContainerPos.z -= moveSpeed;
+        camera.pos.z -= moveSpeed;
     }
 
-    if (input.keyBoard[Button::Q].held) {
-        glassContainerPos.y += moveSpeed;
+    if (input.keyBoard[TinyButton::Q].held) {
+        //glassContainerPos.y += moveSpeed;
+        camera.pos.y += moveSpeed;
     }
 
-    if (input.keyBoard[Button::E].held) {
-        glassContainerPos.y -= moveSpeed;
+    if (input.keyBoard[TinyButton::E].held) {
+        //glassContainerPos.y -= moveSpeed;
+        camera.pos.y -= moveSpeed;
     }
 
     if (input.rightMouse.held) {

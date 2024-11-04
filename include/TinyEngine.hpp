@@ -53,10 +53,10 @@ class TinyEngine {
     glm::vec3 glassContainerPos = { 0,0,0 };
 
     struct Camera {
-        glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
         float yaw = 90.0f;
         float pitch = 0.0f;
         glm::vec3 pos = { 0, 0.5f, -6 };
+        glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
     };
 
     std::vector<TinyPipeline::Vertex> vertices = {
@@ -133,7 +133,7 @@ public:
 
     //void loadModel();
 
-    void gameUpdate(float deltaTime, TinyWindow& window, Input& input);
+    void gameUpdate(float deltaTime, TinyWindow& window, TinyInput& input);
 
     void updateUniformBuffer(uint32_t currentImage, const glm::mat4& modelMatrix, bool useTexture = false);
 

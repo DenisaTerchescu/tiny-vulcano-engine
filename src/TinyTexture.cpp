@@ -217,9 +217,9 @@ void TinyTexture::createTextureSampler(TinyDevice& device) {
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.minLod = 0.0f; // Optional
+    samplerInfo.minLod = 0.0f; 
     samplerInfo.maxLod = static_cast<float>(mipLevels);
-    samplerInfo.mipLodBias = 0.0f; // Optional
+    samplerInfo.mipLodBias = 0.0f; 
 
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &properties);
@@ -246,7 +246,7 @@ void TinyTexture::createTextureSampler(TinyDevice& device) {
 void TinyTexture::generateMipmaps(TinyDevice& device, TinyCommand& command, 
     VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
 
-    // Check if image format supports linear blitting
+   
     VkFormatProperties formatProperties;
     vkGetPhysicalDeviceFormatProperties(device.getPhysicalDevice(), imageFormat, &formatProperties);
 

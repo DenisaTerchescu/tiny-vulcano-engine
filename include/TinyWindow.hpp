@@ -3,7 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <string>
-#include <input.hpp>
+#include <TinyInput.hpp>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -35,6 +35,6 @@ class TinyEngine;
 
 		GLFWwindow *window;
 
-		Input input;
+		TinyInput input;
 
   };
