@@ -9,7 +9,7 @@ void TinyPipeline::createDescriptorSetLayout(TinyDevice& device) {
 
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+    uboLayoutBinding.pImmutableSamplers = nullptr; 
 
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
     samplerLayoutBinding.binding = 1;
