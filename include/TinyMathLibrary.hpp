@@ -2,7 +2,7 @@
 
 #include <glm/mat4x4.hpp>
 
-struct TinyMathLibrary
+namespace TinyMathLibrary
 {
     glm::mat4 Translate(float tx, float ty, float tz)
     {
@@ -82,11 +82,9 @@ struct TinyMathLibrary
             0, 0, 0, 1
         );
 
+        const glm::mat4 model = glm::transpose(glm::mat4(1, 0, 0, -cameraPosition.x, 0, 1, 0, -cameraPosition.y, 0, 0, 1, -cameraPosition.z, 0, 0, 0, 1));
 
-        glm::mat4 translation = glm::mat4(1.0f);
-        translation[3] = glm::vec4(-cameraPosition, 1.0f);
-
-        return view * translation;
+        return view * model;
     }
 };
 

@@ -1,5 +1,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "TinyEngine.hpp"
+#include "TinyMathLibrary.hpp"
 #include <chrono>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -22,8 +23,6 @@ void TinyEngine::initVulkan() {
     command.createCommandPool(tinyDevice);
     depth.createDepthResources(tinyDevice, swapChain, texture);
     texture.init(tinyDevice, command, tinyBuffer);
-
-    //loadModel();
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices);
     tinyBuffer.createUniformBuffers(tinyDevice, pipeline, texture.textureImageView, texture.textureSampler);
@@ -34,7 +33,6 @@ void TinyEngine::initVulkan() {
 
 void TinyEngine::mainLoop() {
 
-
     auto stop = std::chrono::high_resolution_clock::now();
     auto previousTime = std::chrono::high_resolution_clock::now();
 
@@ -42,16 +40,13 @@ void TinyEngine::mainLoop() {
 
         glfwPollEvents();
         window.input.updateTinyInput();
-        
 
         {
             double x = 0, y = 0;
             glfwGetCursorPos(window.window, &x, &y);
             window.input.mousePos = { x,y };
         }
-        
-
-#pragma region deltaTime
+       
 
         auto start = std::chrono::high_resolution_clock::now();
 
@@ -63,9 +58,6 @@ void TinyEngine::mainLoop() {
         if (optimizedDeltaTime < 0) { optimizedDeltaTime = 0; } 
 
         calculateFPS(deltaTime);
-
-#pragma endregion
-
 
         gameUpdate(deltaTime, window, window.input);
 
@@ -87,7 +79,7 @@ void TinyEngine::drawFrame() {
         return;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("failed to acquire swap chain image!");
+        throw std::runtime_error("Failed to acquire swap chain image!");
     }
 
     vkResetFences(tinyDevice.getDevice(), 1, &tinySync.inFlightFences[currentFrame]);
@@ -97,8 +89,8 @@ void TinyEngine::drawFrame() {
     recordCommandBuffer(command.commandBuffers[currentFrame], imageIndex);
     
 
-    glm::mat4 cubeModel = tinyMathLibrary.Translate(glassContainerPos.x, glassContainerPos.y, glassContainerPos.z);
-    cubeModel = cubeModel * tinyMathLibrary.Scale(3.0f, 2.2f, 0.5f);
+    glm::mat4 cubeModel = TinyMathLibrary::Scale(3.0f, 2.2f, 0.5f);
+    cubeModel *= TinyMathLibrary::Translate(glassContainerPos.x, glassContainerPos.y, glassContainerPos.z);
 
      updateUniformBuffer(currentFrame, cubeModel, true);
 
@@ -135,7 +127,7 @@ void TinyEngine::drawFrame() {
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
 
-    presentInfo.pResults = nullptr; // Optional
+    presentInfo.pResults = nullptr;
     vkQueuePresentKHR(tinyDevice.getPresentationQueue(), &presentInfo);
 
 }
@@ -168,8 +160,6 @@ void TinyEngine::cleanup() {
 void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = 0; // Optional
-    beginInfo.pInheritanceInfo = nullptr; // Optional
 
     if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer!");
@@ -317,12 +307,12 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage,
     ubo.model = modelMatrix;
     ubo.useTexture = static_cast<uint32_t>(useTexture);
 
-    ubo.view = glm::lookAt({ camera.pos },
+    ubo.view = TinyMathLibrary::View({ camera.pos },
         glm::vec3(camera.pos) + camera.cameraFront,
         glm::vec3(0.0f, 1.0f, 0.0f));
 
     //ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
-    ubo.proj = tinyMathLibrary.Perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
+    ubo.proj = TinyMathLibrary::Perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
 
     ubo.proj[1][1] *= -1;
 

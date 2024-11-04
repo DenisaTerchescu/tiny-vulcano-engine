@@ -21,10 +21,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-//#define TINYOBJLOADER_IMPLEMENTATION
-//#include <tiny_obj_loader.h>
-
-#include "TinyMathLibrary.hpp"
 #include "TinyWindow.hpp"
 #include "TinyInstance.hpp"
 #include "TinyDevice.hpp"
@@ -35,9 +31,6 @@
 #include "TinyTexture.hpp"
 #include "TinyDepth.hpp"
 #include "TinySync.hpp"
-
-
-const std::string MODEL_PATH = "C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/models/room.obj";
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -118,10 +111,6 @@ public:
 
     TinyTexture texture;
     Camera camera;
-    TinyMathLibrary tinyMathLibrary;
-
-    //std::vector<Vertex> vertices;
-    //std::vector<uint32_t> indices;
    
     uint32_t currentFrame = 0;
 
