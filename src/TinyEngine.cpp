@@ -87,11 +87,7 @@ void TinyEngine::drawFrame() {
     vkResetCommandBuffer(command.commandBuffers[currentFrame], 0);
 
     recordCommandBuffer(command.commandBuffers[currentFrame], imageIndex);
-    
-
-    //glm::mat4 cubeModel = TinyMathLibrary::Scale(1.0f, 1.2f, 0.5f);
-    //cubeModel *= TinyMathLibrary::Translate(glassContainerPos.x, glassContainerPos.y, glassContainerPos.z);
-    // updateUniformBuffer(currentFrame, cubeModel, true);
+  
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -197,90 +193,28 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
-
+  
     // Draw first cube
-    updateUniformBuffer(currentFrame, glm::mat4(
-        TinyMathLibrary::Scale(1.0f, 1.2f, 0.5f) *
-        TinyMathLibrary::Translate(glassContainerPos.x - 0.15f, glassContainerPos.y, glassContainerPos.z)
-    ), true);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
+    glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(+1.25f, 0, 0));
+    cubeModel = glm::scale(cubeModel, glm::vec3(0.8f, 0.8f, 0.8f));
+    updateUniformBuffer(currentFrame, cubeModel, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
     // Draw second cube
-    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
-    //updateUniformBuffer2(currentFrame, glm::mat4(
-    //    TinyMathLibrary::Scale(1.0f, 1.2f, 0.5f) *
-    //    TinyMathLibrary::Translate(glassContainerPos.x + .15f, glassContainerPos.y, glassContainerPos.z)
-    //), true);
-    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-
-    vkCmdEndRenderPass(commandBuffer);
-
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to record command buffer!");
-    }
-}
-/*
-void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-        throw std::runtime_error("failed to begin recording command buffer!");
-    }
-
-    VkRenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = swapChain.getRenderPass();
-    renderPassInfo.framebuffer = swapChain.getSwapChainFramebuffers()[imageIndex];
-
-    renderPassInfo.renderArea.offset = { 0, 0 };
-    renderPassInfo.renderArea.extent = swapChain.getSwapChainExtent();
-
-    VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
-
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.graphicsPipeline);
-
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(swapChain.getSwapChainExtent().width);
-    viewport.height = static_cast<float>(swapChain.getSwapChainExtent().height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = swapChain.getSwapChainExtent();
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.graphicsPipeline);
-
-    VkBuffer vertexBuffers[] = { tinyBuffer.vertexBuffer };
-    VkDeviceSize offsets[] = { 0 };
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
-    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
-    // for loading models
-     //vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
+    glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0, 0));
+    cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.8f, 0.8f, 0.8f));
+    updateUniformBuffer2(currentFrame, cubeModel2, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
-
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
 }
-*/
+
 void TinyEngine::calculateFPS(float deltaTime) {
     frameCount++;
     timeAccumulator += deltaTime;
@@ -369,18 +303,21 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage,
 
     TinyBuffer::UniformBufferObject ubo{};
     ubo.model = modelMatrix;
-    ubo.useTexture = static_cast<uint32_t>(useTexture);
 
-    ubo.view = TinyMathLibrary::View({ camera.pos },
+    glm::vec3 pos(0, 1, -2);
+
+    ubo.view = glm::lookAt({ camera.pos },
         glm::vec3(camera.pos) + camera.cameraFront,
         glm::vec3(0.0f, 1.0f, 0.0f));
 
-    //ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
-    ubo.proj = TinyMathLibrary::Perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
+    ubo.useTexture = static_cast<uint32_t>(useTexture);
+
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
 
     ubo.proj[1][1] *= -1;
 
     memcpy(tinyBuffer.uniformBuffersMappedCube1[currentImage], &ubo, sizeof(ubo));
+
 
 }
 
@@ -394,19 +331,19 @@ void TinyEngine::updateUniformBuffer2(uint32_t currentImage,
 
     TinyBuffer::UniformBufferObject ubo{};
     ubo.model = modelMatrix;
-    ubo.useTexture = static_cast<uint32_t>(useTexture);
 
-    ubo.view = TinyMathLibrary::View({ camera.pos },
+    glm::vec3 pos(0, 1, -2);
+
+    ubo.view = glm::lookAt({ camera.pos },
         glm::vec3(camera.pos) + camera.cameraFront,
         glm::vec3(0.0f, 1.0f, 0.0f));
 
-    //ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
-    ubo.proj = TinyMathLibrary::Perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
+    ubo.useTexture = static_cast<uint32_t>(useTexture);
+
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
 
     ubo.proj[1][1] *= -1;
-    if (tinyBuffer.uniformBuffersMappedCube2[currentImage] != nullptr) 
-    {
-        memcpy(tinyBuffer.uniformBuffersMappedCube2[currentImage], &ubo, sizeof(ubo));
-    }
+
+    memcpy(tinyBuffer.uniformBuffersMappedCube2[currentImage], &ubo, sizeof(ubo));
 
 }
