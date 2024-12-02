@@ -11,7 +11,6 @@
 using namespace std;
 
 
-
 class TinyPipeline {
     std::vector<VkDynamicState> states = {
     VK_DYNAMIC_STATE_VIEWPORT,
