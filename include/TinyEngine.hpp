@@ -127,6 +127,7 @@ public:
     void gameUpdate(float deltaTime, TinyWindow& window, TinyInput& input);
 
     void updateUniformBuffer(uint32_t currentImage, const glm::mat4& modelMatrix, bool useTexture = false);
+    void updateUniformBuffer2(uint32_t currentImage, const glm::mat4& modelMatrix, bool useTexture = false);
 
     void lookAround(float deltaTime, float xPos, float yPos);
 
