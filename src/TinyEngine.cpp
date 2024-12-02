@@ -89,7 +89,7 @@ void TinyEngine::drawFrame() {
     recordCommandBuffer(command.commandBuffers[currentFrame], imageIndex);
     
 
-    glm::mat4 cubeModel = TinyMathLibrary::Scale(3.0f, 2.2f, 0.5f);
+    glm::mat4 cubeModel = TinyMathLibrary::Scale(1.0f, 1.2f, 0.5f);
     cubeModel *= TinyMathLibrary::Translate(glassContainerPos.x, glassContainerPos.y, glassContainerPos.z);
 
      updateUniformBuffer(currentFrame, cubeModel, true);
