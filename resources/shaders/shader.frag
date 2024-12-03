@@ -33,4 +33,5 @@ void main() {
     vec3 finalColor = lighting * texColor.rgb; // Combine lighting with texture
 
     outColor = vec4(finalColor, texColor.a); // Output color
+     outColor = texture(texSampler, fragTexCoord); 
 }
