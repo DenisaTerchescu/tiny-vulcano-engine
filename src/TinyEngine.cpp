@@ -196,7 +196,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
   
     // Draw first cube
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
-    glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(+1.25f, 0, 0));
+    glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y, glassContainer.z));
     cubeModel = glm::scale(cubeModel, glm::vec3(0.8f, 0.8f, 0.8f));
     updateUniformBuffer(currentFrame, cubeModel, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
@@ -278,10 +278,22 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& inpu
         camera.pos.y += moveSpeed;
     }
 
-    if (input.keyBoard[TinyButton::E].held) {
-        //glassContainerPos.y -= moveSpeed;
-        camera.pos.y -= moveSpeed;
+    if (input.keyBoard[TinyButton::Up].held) {
+        glassContainer.z += moveSpeed;
     }
+
+    if (input.keyBoard[TinyButton::Down].held) {
+        glassContainer.z -= moveSpeed;
+    }
+
+    if (input.keyBoard[TinyButton::Left].held) {
+        glassContainer.x += moveSpeed;
+    }
+
+    if (input.keyBoard[TinyButton::Right].held) {
+        glassContainer.x -= moveSpeed;
+    }
+
 
     if (input.rightMouse.held) {
 
