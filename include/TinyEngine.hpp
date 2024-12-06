@@ -34,15 +34,24 @@
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
-namespace std {
-    template<> struct hash<TinyPipeline::Vertex> {
-        size_t operator()(TinyPipeline::Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^
-                (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-                (hash<glm::vec2>()(vertex.texCoord) << 1);
-        }
-    };
-}
+//namespace std {
+//    template<> struct hash<TinyPipeline::Vertex> {
+//        size_t operator()(TinyPipeline::Vertex const& vertex) const {
+//            return ((hash<glm::vec3>()(vertex.pos) ^
+//                (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+//                (hash<glm::vec2>()(vertex.texCoord) << 1);
+//        }
+//    };
+//}
+
+template<> struct hash<TinyPipeline::Vertex> {
+    size_t operator()(TinyPipeline::Vertex const& vertex) const {
+        return ((hash<glm::vec3>()(vertex.pos) ^
+            (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+            (hash<glm::vec2>()(vertex.texCoord) << 1) ^
+            (hash<glm::vec3>()(vertex.normal) << 1);  
+    }
+};
 
 class TinyEngine {
     
@@ -69,18 +78,19 @@ class TinyEngine {
     //};
 
     std::vector<TinyPipeline::Vertex> vertices = {
-        // Front face
-        {{-1.0f, -1.0f, 1.0f},  {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}, // Normal pointing out
-        {{1.0f, -1.0f, 1.0f},   {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}, // Normal pointing out
-        {{1.0f, 1.0f, 1.0f},    {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Normal pointing out
-        {{-1.0f, 1.0f, 1.0f},   {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Normal pointing out
+        // Back face - magenta
+        {{-1.0f, -1.0f, 1.0f},  {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}}, // Normal pointing out
+        {{1.0f, -1.0f, 1.0f},   {1.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}}, // Normal pointing out
+        {{1.0f, 1.0f, 1.0f},    {1.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}}, // Normal pointing out
+        {{-1.0f, 1.0f, 1.0f},   {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}}, // Normal pointing out
 
-        // Back face
-        {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}}, // Normal pointing in
-        {{1.0f, -1.0f, -1.0f},  {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}}, // Normal pointing in
-        {{1.0f, 1.0f, -1.0f},   {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}}, // Normal pointing in
-        {{-1.0f, 1.0f, -1.0f},  {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}}, // Normal pointing in
+        // Front face - green
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}, // Normal pointing in
+        {{1.0f, -1.0f, -1.0f},  {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}, // Normal pointing in
+        {{1.0f, 1.0f, -1.0f},   {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Normal pointing in
+        {{-1.0f, 1.0f, -1.0f},  {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Normal pointing in
     };
+
 
 
     std::vector<uint16_t> indices = {

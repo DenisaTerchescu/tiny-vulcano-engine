@@ -1,8 +1,9 @@
 #version 450
 
-layout(location = 0) in vec3 fragColor;
-layout(location = 1) in vec2 fragTexCoord;
-layout(location = 2) in vec3 fragNormal;
+layout(location = 0) in vec3 fragPosition;
+layout(location = 1) in vec3 fragColor;
+layout(location = 2) in vec2 fragTexCoord;
+layout(location = 3) in vec3 fragNormal;
 
 layout(binding = 0) uniform UniformBufferObject {
     mat4 model;
@@ -16,21 +17,24 @@ layout(binding = 1) uniform sampler2D texSampler;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = texture(texSampler, fragTexCoord);
+   // outColor = texture(texSampler, fragTexCoord);
    // if (ubo.useTexture == 1) {
     //    outColor = texture(texSampler, fragTexCoord); // Glass container
   //  } else {
     //    outColor = vec4(1.0, 0.0, 0.0, 1.0); // Particle
    // }
-   // vec3 lightDir = normalize(vec3(0.5, 1.0, 0.5)); // Light direction
-  //  float diff = max(dot(normalize(fragNormal), lightDir), 0.0); // Diffuse lighting factor
+vec3 lightPos = normalize(vec3(10, 1.0, 1.0)); 
+vec3 lightDir = normalize(lightPos - fragPosition); 
+vec3 lightColor = vec3(1.0, 0.75, 0.8); 
+vec3 objectColor = vec3(0.0, 1.0, 0.0);
 
-   // vec3 lightColor = vec3(1.0, 0.75, 0.8); 
-   // vec3 lighting = diff * lightColor;     
+vec3 ambientColor = vec3(0.1, 0.1, 0.1);
 
-  //  vec4 texColor = texture(texSampler, fragTexCoord); 
-  //  vec3 finalColor = lighting * texColor.rgb;
+float diff = max(dot(fragNormal, lightDir), 0.0);
+vec3 diffuseLighting = diff * lightColor;
 
-  //  outColor = vec4(finalColor, texColor.a); 
-    
+vec3 finalColor = (diffuseLighting + ambientColor) * objectColor;
+
+outColor = vec4(finalColor, 1.0); 
+
 }
