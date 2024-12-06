@@ -9,7 +9,7 @@ layout(binding = 0) uniform UniformBufferObject {
     mat4 model;
     mat4 view;
     mat4 proj;
-    uint useTexture;
+    vec3 viewPos;
 } ubo;
 
 layout(binding = 1) uniform sampler2D texSampler;

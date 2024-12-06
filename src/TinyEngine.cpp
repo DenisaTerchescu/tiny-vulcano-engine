@@ -331,7 +331,7 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage,
         glm::vec3(camera.pos) + camera.cameraFront,
         glm::vec3(0.0f, 1.0f, 0.0f));
 
-    ubo.useTexture = static_cast<uint32_t>(useTexture);
+    ubo.viewPos = glm::vec3(camera.pos);
 
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
 
@@ -359,7 +359,7 @@ void TinyEngine::updateUniformBuffer2(uint32_t currentImage,
         glm::vec3(camera.pos) + camera.cameraFront,
         glm::vec3(0.0f, 1.0f, 0.0f));
 
-    ubo.useTexture = static_cast<uint32_t>(useTexture);
+    ubo.viewPos = glm::vec3(camera.pos);
 
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
 
