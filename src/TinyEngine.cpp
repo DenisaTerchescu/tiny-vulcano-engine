@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/gtx/transform.hpp>
+#include <imgui.h>
 
 void TinyEngine::run() {
     window.initWindow();
@@ -358,4 +359,17 @@ void TinyEngine::updateUniformBuffer2(uint32_t currentImage,
 
     memcpy(tinyBuffer.uniformBuffersMappedCube2[currentImage], &ubo, sizeof(ubo));
 
+}
+
+void TinyEngine::initImgui(float deltaTime)
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable keyboard controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable multi-viewport
+
+    // Optional: Set ImGui style
+    ImGui::StyleColorsDark();
 }

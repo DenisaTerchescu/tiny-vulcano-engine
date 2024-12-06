@@ -21,6 +21,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 add_subdirectory(thirdparty/glfw-3.3.2)            
 add_subdirectory(thirdparty/stb_image)              
 add_subdirectory(thirdparty/glm)                                     
+add_subdirectory(thirdparty/imgui-docking)                                     
 
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
@@ -31,4 +32,4 @@ target_compile_definitions("TinyVulcanoEngine" PUBLIC RESOURCES_PATH="${CMAKE_CU
 target_include_directories("TinyVulcanoEngine" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 target_include_directories("TinyVulcanoEngine" PUBLIC "C:/VulkanSDK/1.3.290.0/Include/")
 
-target_link_libraries("TinyVulcanoEngine" PRIVATE glm glfw stb_image ${Vulkan_LIBRARIES})
+target_link_libraries("TinyVulcanoEngine" PRIVATE glm glfw stb_image imgui ${Vulkan_LIBRARIES})

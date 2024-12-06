@@ -148,4 +148,6 @@ public:
 
     void calculateFPS(float deltaTime);
 
+    void initImgui(float deltaTime);
+
 };
