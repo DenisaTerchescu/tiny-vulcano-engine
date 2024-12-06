@@ -228,11 +228,11 @@ void TinyEngine::calculateFPS(float deltaTime) {
     frameCount++;
     timeAccumulator += deltaTime;
 
-    if (timeAccumulator >= fpsUpdateInterval) {
-        fps = frameCount / timeAccumulator;
-        frameCount = 0;
-        timeAccumulator = 0.0f;
-
+    
+    if (timeAccumulator >= 1.0f) {
+        fps = frameCount / timeAccumulator; 
+        frameCount = 0; 
+        timeAccumulator = 0.0f; 
     }
 }
 
@@ -433,7 +433,7 @@ void TinyEngine::drawUI()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Hello!");
+    ImGui::Begin("TinyVulcanoEngine");
 
     ImVec4 pinkColor(1.0f, 0.0f, 1.0f, 1.0f);       
     ImVec4 pinkHoveredColor(1.0f, 0.2f, 1.0f, 1.0f); 
@@ -442,7 +442,7 @@ void TinyEngine::drawUI()
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, pinkHoveredColor);
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, pinkColor);
 
-    ImGui::TextColored(pinkColor, "TinyVulcanoEngine");
+    ImGui::TextColored(pinkColor, "%.2f FPS", fps);
     ImGui::Spacing();
     ImGui::Spacing();
     if (ImGui::Button("Click Me!")) {
