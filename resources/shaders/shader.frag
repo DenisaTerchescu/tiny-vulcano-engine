@@ -28,13 +28,21 @@ vec3 lightDir = normalize(lightPos - fragPosition);
 vec3 lightColor = vec3(1.0, 0.75, 0.8); 
 vec3 objectColor = vec3(0.0, 1.0, 0.0);
 
+// ambient light
 vec3 ambientColor = vec3(0.1, 0.1, 0.1);
 
+// diffuse light
 float diff = max(dot(fragNormal, lightDir), 0.0);
 vec3 diffuseLighting = diff * lightColor;
 
-vec3 finalColor = (diffuseLighting + ambientColor) * objectColor;
+// specular light
+float specularStrength = 0.5;
+vec3 viewDir = normalize(ubo.viewPos - fragPosition);
+vec3 reflectDir = reflect(-lightDir, fragNormal); 
+float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+vec3 specular = specularStrength * spec * lightColor;  
 
+vec3 finalColor = (diffuseLighting + ambientColor + specular) * objectColor;
 outColor = vec4(finalColor, 1.0); 
 
 }
