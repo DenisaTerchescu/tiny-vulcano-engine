@@ -260,7 +260,7 @@ void TinyEngine::lookAround(float deltaTime, float xPos, float yPos) {
 }
 void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& input)
 {
-    const float moveSpeed = 0.8f * deltaTime;
+    const float moveSpeed = 2.8f * deltaTime;
 
     if (input.keyBoard[TinyButton::A].held) {
         //glassContainerPos.x += moveSpeed;
@@ -285,6 +285,11 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& inpu
     if (input.keyBoard[TinyButton::Q].held) {
         //glassContainerPos.y += moveSpeed;
         camera.pos.y += moveSpeed;
+    }
+
+    if (input.keyBoard[TinyButton::E].held) {
+        //glassContainerPos.y += moveSpeed;
+        camera.pos.y -= moveSpeed;
     }
 
     if (input.keyBoard[TinyButton::Up].held) {
