@@ -7,10 +7,13 @@
 #include <glm/mat3x3.hpp>
 #include <glm/gtx/transform.hpp>
 #include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_vulkan.h>
 
 void TinyEngine::run() {
     window.initWindow();
     initVulkan();
+    initImgui();
     mainLoop();
     cleanup();
 }
@@ -58,6 +61,8 @@ void TinyEngine::mainLoop() {
         if (optimizedDeltaTime > 1.f / 10) { optimizedDeltaTime = 1.f / 10; } // bugfix
         if (optimizedDeltaTime < 0) { optimizedDeltaTime = 0; } 
 
+        drawUI();
+
         calculateFPS(deltaTime);
 
         gameUpdate(deltaTime, window, window.input);
@@ -89,6 +94,7 @@ void TinyEngine::drawFrame() {
 
     recordCommandBuffer(command.commandBuffers[currentFrame], imageIndex);
   
+    //ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command.commandBuffers[currentFrame]);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -208,6 +214,8 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.8f, 0.8f, 0.8f));
     updateUniformBuffer2(currentFrame, cubeModel2, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -361,15 +369,77 @@ void TinyEngine::updateUniformBuffer2(uint32_t currentImage,
 
 }
 
-void TinyEngine::initImgui(float deltaTime)
+void TinyEngine::initImgui()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable keyboard controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable multi-viewport
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    
 
-    // Optional: Set ImGui style
+
     ImGui::StyleColorsDark();
+
+    VkDescriptorPool imguiDescriptorPool;
+    VkDescriptorPoolSize poolSizes[] = {
+        { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+    };
+    VkDescriptorPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    poolInfo.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
+    poolInfo.poolSizeCount = static_cast<uint32_t>(std::size(poolSizes));
+    poolInfo.pPoolSizes = poolSizes;
+    if (vkCreateDescriptorPool(tinyDevice.getDevice(), &poolInfo, nullptr, &imguiDescriptorPool) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create ImGui descriptor pool");
+    }
+
+
+    ImGui_ImplGlfw_InitForVulkan(window.getWindow(), true);
+    ImGui_ImplVulkan_InitInfo init_info = {};
+    init_info.Instance = instance.getInstance();
+    init_info.PhysicalDevice = tinyDevice.physicalDevice;
+    init_info.Device = tinyDevice.getDevice();
+    init_info.QueueFamily = tinyDevice.findQueueFamilies().graphicsFamily.value();
+    init_info.Queue = tinyDevice.getGraphicsQueue();
+    init_info.DescriptorPool = imguiDescriptorPool;
+    init_info.MinImageCount = 2;
+    init_info.ImageCount = swapChain.getSwapChainImages().size();
+    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+    ImGui_ImplVulkan_Init(&init_info, swapChain.getRenderPass());
+
+    VkCommandBuffer commandBuffer = command.beginSingleTimeCommands(tinyDevice);
+    ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+    command.endSingleTimeCommands(commandBuffer, tinyDevice);
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+}
+
+void TinyEngine::drawUI()
+{
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Hello!");
+    if (ImGui::Button("Click Me!")) {
+        std::cout << "Hey, you just clicked me!" << std::endl;
+    }
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
 }
