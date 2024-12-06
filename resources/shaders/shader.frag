@@ -18,15 +18,12 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
    // outColor = texture(texSampler, fragTexCoord);
-   // if (ubo.useTexture == 1) {
-    //    outColor = texture(texSampler, fragTexCoord); // Glass container
-  //  } else {
-    //    outColor = vec4(1.0, 0.0, 0.0, 1.0); // Particle
-   // }
+
 vec3 lightPos = normalize(vec3(10, 1.0, 1.0)); 
 vec3 lightDir = normalize(lightPos - fragPosition); 
 vec3 lightColor = vec3(1.0, 0.75, 0.8); 
 vec3 objectColor = vec3(0.0, 1.0, 0.0);
+vec4 texColor = texture(texSampler, fragTexCoord);
 
 // ambient light
 vec3 ambientColor = vec3(0.1, 0.1, 0.1);
@@ -42,7 +39,7 @@ vec3 reflectDir = reflect(-lightDir, fragNormal);
 float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 vec3 specular = specularStrength * spec * lightColor;  
 
-vec3 finalColor = (diffuseLighting + ambientColor + specular) * objectColor;
-outColor = vec4(finalColor, 1.0); 
+vec3 finalColor = (diffuseLighting + ambientColor + specular) * texColor.rgb;
+outColor = vec4(finalColor, texColor.a); 
 
 }
