@@ -434,9 +434,22 @@ void TinyEngine::drawUI()
     ImGui::NewFrame();
 
     ImGui::Begin("Hello!");
+
+    ImVec4 pinkColor(1.0f, 0.0f, 1.0f, 1.0f);       
+    ImVec4 pinkHoveredColor(1.0f, 0.2f, 1.0f, 1.0f); 
+
+    ImGui::PushStyleColor(ImGuiCol_Button, pinkColor);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, pinkHoveredColor);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, pinkColor);
+
+    ImGui::TextColored(pinkColor, "TinyVulcanoEngine");
+    ImGui::Spacing();
+    ImGui::Spacing();
     if (ImGui::Button("Click Me!")) {
         std::cout << "Hey, you just clicked me!" << std::endl;
     }
+
+    ImGui::PopStyleColor(3);
     ImGui::End();
 
     ImGui::Render();
