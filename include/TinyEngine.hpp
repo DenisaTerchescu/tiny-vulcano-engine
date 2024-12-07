@@ -257,6 +257,11 @@ public:
     TinyPipeline pipeline;
     TinyCommand command;
 
+	std::vector<TinyPipeline::Vertex> modelVertices;
+	std::vector<uint32_t> modelIndices;
+	VkBuffer modelVertexBuffer;
+	VkDeviceMemory modelVertexBufferMemory;
+
     TinySync tinySync;
 
     TinyBuffer tinyBuffer;
@@ -290,5 +295,7 @@ public:
     void initImgui();
     
     void drawUI();
+
+	void loadModel();
 
 };

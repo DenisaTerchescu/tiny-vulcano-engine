@@ -1,4 +1,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
 #include "TinyEngine.hpp"
 #include "TinyMathLibrary.hpp"
 #include <chrono>
@@ -454,4 +456,9 @@ void TinyEngine::drawUI()
     ImGui::Render();
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
+}
+
+void TinyEngine::loadModel()
+{
+
 }
