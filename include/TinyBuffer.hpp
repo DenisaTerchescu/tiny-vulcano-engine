@@ -22,7 +22,7 @@ public:
     void cleanupUniformBuffers(TinyDevice& device);
 
     void createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<TinyPipeline::Vertex>& vertices);
-    void createIndexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<uint16_t>& indices);
+    void createIndexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<uint32_t>& indices);
 
     void createBuffer(TinyDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);

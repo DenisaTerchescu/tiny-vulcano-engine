@@ -40,7 +40,7 @@ void TinyBuffer::createVertexBuffer(TinyDevice& device, TinyCommand& command, co
 }
 
 void TinyBuffer::createIndexBuffer(TinyDevice& device, TinyCommand& command, 
-    const std::vector<uint16_t>& indices) {
+    const std::vector<uint32_t>& indices) {
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
     VkBuffer stagingBuffer;
