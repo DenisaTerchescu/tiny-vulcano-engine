@@ -495,6 +495,11 @@ void TinyEngine::drawUI()
     ImGui::Spacing();
 
     ImGui::DragFloat3("Sphere position", &sphere[0]);
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Text("WASDEQ - Move camera");
+    ImGui::Text("Right click - Look around");
+    ImGui::Text("Arrows - Move the cube");
     ImGui::End();
 
     ImGui::Render();
