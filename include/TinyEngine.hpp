@@ -224,6 +224,8 @@ public:
 
     void drawFrame();
 
+	void loadModel();
+
     void cleanup();
 
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
@@ -242,7 +244,5 @@ public:
     void SetupImGuiStyle();
     
     void drawUI();
-
-	void loadModel();
 
 };
