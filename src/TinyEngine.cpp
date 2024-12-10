@@ -32,6 +32,8 @@ void TinyEngine::initVulkan() {
     loadModel();
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices,tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
+    tinyBuffer.createVertexBuffer(tinyDevice, command, modelVertices, tinyBuffer.modelVertexBuffer, tinyBuffer.modelVertexBufferMemory);
+    tinyBuffer.createIndexBuffer(tinyDevice, command, modelIndices, tinyBuffer.modelIndexBuffer, tinyBuffer.modelIndexBufferMemory);
     //tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
     //tinyBuffer.createIndexBuffer(tinyDevice, command, indices, tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
     tinyBuffer.createUniformBuffers(tinyDevice, pipeline, texture.textureImageView, texture.textureSampler);
@@ -200,24 +202,30 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     scissor.extent = swapChain.getSwapChainExtent();
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkBuffer vertexBuffers[] = { tinyBuffer.vertexBuffer };
-    VkDeviceSize offsets[] = { 0 };
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    //VkBuffer vertexBuffers[] = { tinyBuffer.vertexBuffer };
+    VkDeviceSize offsets[] = { 0, 0 };
+    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
   
-    // Draw first cube
+    // Drawing the  cube
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
     glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y, glassContainer.z));
-    cubeModel = glm::scale(cubeModel, glm::vec3(3.8f, 3.8f, 3.8f));
+    cubeModel = glm::scale(cubeModel, glm::vec3(0.8f, 0.8f, 0.8f));
     updateUniformBuffer(currentFrame, cubeModel, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
-    // Draw second cube
-   //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
-   // glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0, 0));
-   // cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.8f, 0.8f, 0.8f));
-   // updateUniformBuffer2(currentFrame, cubeModel2, true);
-   // vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    // Drawing the sphere model
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
+    glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0, 0));
+    cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.8f, 0.8f, 0.8f));
+    updateUniformBuffer2(currentFrame, cubeModel2, true);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
 
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 
@@ -580,11 +588,11 @@ void TinyEngine::loadModel() {
             vertex.color = { 1.0f, 1.0f, 1.0f };
 
             if (uniqueVertices.count(vertex) == 0) {
-                uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-                vertices.push_back(vertex);
+                uniqueVertices[vertex] = static_cast<uint32_t>(modelVertices.size());
+                modelVertices.push_back(vertex);
             }
 
-            indices.push_back(uniqueVertices[vertex]);
+            modelIndices.push_back(uniqueVertices[vertex]);
         }
     }
 }
