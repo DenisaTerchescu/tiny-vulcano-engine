@@ -35,16 +35,6 @@
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = RESOURCES_PATH "models/ball.obj";
 
-//namespace std {
-//    template<> struct hash<TinyPipeline::Vertex> {
-//        size_t operator()(TinyPipeline::Vertex const& vertex) const {
-//            return ((hash<glm::vec3>()(vertex.pos) ^
-//                (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-//                (hash<glm::vec2>()(vertex.texCoord) << 1);
-//        }
-//    };
-//}
-
 template<> struct hash<TinyPipeline::Vertex> {
     size_t operator()(TinyPipeline::Vertex const& vertex) const {
         return ((hash<glm::vec3>()(vertex.pos) ^
@@ -57,6 +47,7 @@ template<> struct hash<TinyPipeline::Vertex> {
 class TinyEngine {
     
     glm::vec3 glassContainer = { 1.25f,0,0 };
+	glm::vec3 sphere = glm::vec3(-1.5f, 0, 0);
 
     struct Camera {
         float yaw = 90.0f;

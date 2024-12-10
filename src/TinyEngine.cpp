@@ -34,8 +34,6 @@ void TinyEngine::initVulkan() {
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices,tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
     tinyBuffer.createVertexBuffer(tinyDevice, command, modelVertices, tinyBuffer.modelVertexBuffer, tinyBuffer.modelVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, modelIndices, tinyBuffer.modelIndexBuffer, tinyBuffer.modelIndexBufferMemory);
-    //tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
-    //tinyBuffer.createIndexBuffer(tinyDevice, command, indices, tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
     tinyBuffer.createUniformBuffers(tinyDevice, pipeline, texture.textureImageView, texture.textureSampler);
 
     command.createCommandBuffers(tinyDevice);
@@ -57,8 +55,7 @@ void TinyEngine::mainLoop() {
             glfwGetCursorPos(window.window, &x, &y);
             window.input.mousePos = { x,y };
         }
-       
-
+        
         auto start = std::chrono::high_resolution_clock::now();
 
         float deltaTime = (std::chrono::duration_cast<std::chrono::nanoseconds>(start - stop)).count() / 1000000000.0;
@@ -210,7 +207,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
   
-    // Drawing the  cube
+    // Drawing the cube
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
     glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y, glassContainer.z));
     cubeModel = glm::scale(cubeModel, glm::vec3(0.8f, 0.8f, 0.8f));
@@ -222,8 +219,8 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 
     // Drawing the sphere model
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
-    glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0, 0));
-    sphereModel = glm::scale(sphereModel, glm::vec3(0.8f, 0.8f, 0.8f));
+    glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), sphere);
+    sphereModel = glm::scale(sphereModel, glm::vec3(1.2f, 1.2f, 1.2f));
     updateUniformBuffer2(currentFrame, sphereModel, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
 
@@ -313,7 +310,6 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& inpu
     if (input.keyBoard[TinyButton::Right].held) {
         glassContainer.x -= moveSpeed;
     }
-
 
     if (input.rightMouse.held) {
 
@@ -448,10 +444,9 @@ void TinyEngine::drawUI()
 
     ImGui::Text("%.2f FPS", fps);
     ImGui::Spacing();
-    if (ImGui::Button("Click Me!")) {
-        std::cout << "Hey, you just clicked me!" << std::endl;
-    }
+    ImGui::Spacing();
 
+    ImGui::DragFloat3("Sphere position", &sphere[0]);
     ImGui::End();
 
     ImGui::Render();
@@ -596,3 +591,4 @@ void TinyEngine::loadModel() {
         }
     }
 }
+
