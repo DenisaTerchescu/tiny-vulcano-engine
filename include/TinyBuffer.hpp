@@ -21,8 +21,10 @@ public:
     void cleanup(TinyDevice& device);
     void cleanupUniformBuffers(TinyDevice& device);
 
-    void createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<TinyPipeline::Vertex>& vertices);
-    void createIndexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<uint32_t>& indices);
+    void createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<TinyPipeline::Vertex>& vertices,
+        VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory);
+    void createIndexBuffer(TinyDevice& device, TinyCommand& command, 
+        const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory);
 
     void createBuffer(TinyDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -39,6 +41,11 @@ public:
     VkDeviceMemory vertexBufferMemory;
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
+
+    VkBuffer modelVertexBuffer;
+    VkDeviceMemory modelVertexBufferMemory;
+    VkBuffer modelIndexBuffer;
+    VkDeviceMemory modelIndexBufferMemory;
 
     std::vector<VkBuffer> uniformBuffersCube1;
     std::vector<VkDeviceMemory> uniformBuffersMemoryCube1;

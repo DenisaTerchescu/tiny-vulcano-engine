@@ -3,6 +3,8 @@
 void TinyBuffer::cleanup(TinyDevice& device) {
     vkDestroyBuffer(device.getDevice(), vertexBuffer, nullptr);
     vkFreeMemory(device.getDevice(), vertexBufferMemory, nullptr);
+    vkDestroyBuffer(device.getDevice(), modelVertexBuffer, nullptr);
+    vkFreeMemory(device.getDevice(), modelVertexBufferMemory, nullptr);
     vkDestroyBuffer(device.getDevice(), indexBuffer, nullptr);
     vkFreeMemory(device.getDevice(), indexBufferMemory, nullptr);
 
@@ -19,7 +21,8 @@ void TinyBuffer::cleanupUniformBuffers(TinyDevice& device) {
     vkDestroyDescriptorPool(device.getDevice(), descriptorPool, nullptr);
 }
 
-void TinyBuffer::createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<TinyPipeline::Vertex>& vertices) {
+void TinyBuffer::createVertexBuffer(TinyDevice& device, TinyCommand& command, 
+    const std::vector<TinyPipeline::Vertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory) {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
     VkBuffer stagingBuffer;
@@ -40,7 +43,7 @@ void TinyBuffer::createVertexBuffer(TinyDevice& device, TinyCommand& command, co
 }
 
 void TinyBuffer::createIndexBuffer(TinyDevice& device, TinyCommand& command, 
-    const std::vector<uint32_t>& indices) {
+    const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory) {
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
     VkBuffer stagingBuffer;
