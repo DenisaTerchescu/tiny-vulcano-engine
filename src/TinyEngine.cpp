@@ -29,6 +29,7 @@ void TinyEngine::initVulkan() {
     command.createCommandPool(tinyDevice);
     depth.createDepthResources(tinyDevice, swapChain, texture);
     texture.init(tinyDevice, command, tinyBuffer);
+    loadModel();
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices);
     tinyBuffer.createUniformBuffers(tinyDevice, pipeline, texture.textureImageView, texture.textureSampler);
@@ -210,11 +211,11 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
     // Draw second cube
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
+   /* vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
     glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0, 0));
     cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.8f, 0.8f, 0.8f));
     updateUniformBuffer2(currentFrame, cubeModel2, true);
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);*/
 
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 
@@ -463,9 +464,10 @@ void TinyEngine::loadModel() {
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
-    //if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
-    //    throw std::runtime_error(warn + err);
-    //}
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
+        std::cout << "Loading model didn't work!";
+        return;
+    }
 
     std::unordered_map<TinyPipeline::Vertex, uint32_t> uniqueVertices{};
 
@@ -478,6 +480,7 @@ void TinyEngine::loadModel() {
                 attrib.vertices[3 * index.vertex_index + 2]
             };
 
+            if(!attrib.texcoords.empty())
             vertex.texCoord = {
                 attrib.texcoords[2 * index.texcoord_index + 0],
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
@@ -490,7 +493,7 @@ void TinyEngine::loadModel() {
                 vertices.push_back(vertex);
             }
 
-            modelIndices.push_back(uniqueVertices[vertex]);
+            indices.push_back(uniqueVertices[vertex]);
         }
     }
 }

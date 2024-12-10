@@ -63,8 +63,8 @@ VkShaderModule TinyPipeline::createShaderModule(TinyDevice& device, const std::v
 }
 
 void TinyPipeline::createGraphicsPipeline(TinyDevice& device, TinySwapChain& swapChain) {
-    auto vertShaderCode = readFile("C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/shaders/vert.spv");
-    auto fragShaderCode = readFile("C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/shaders/frag.spv");
+    auto vertShaderCode = readFile(RESOURCES_PATH "shaders/vert.spv");
+    auto fragShaderCode = readFile(RESOURCES_PATH "shaders/frag.spv");
 
     VkShaderModule vertShaderModule = createShaderModule(device, vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(device, fragShaderCode);

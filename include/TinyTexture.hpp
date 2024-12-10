@@ -20,7 +20,7 @@ public:
     VkImageView textureImageView;
     VkSampler textureSampler;
 
-    const std::string TEXTURE_PATH = "C:/Users/Denisa/Desktop/TinyVulcanoEngine/resources/textures/glass.png";
+    const std::string TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
 
     void createTextureImage(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer);
     void copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
