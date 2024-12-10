@@ -222,9 +222,9 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 
     // Drawing the sphere model
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
-    glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0, 0));
-    cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.8f, 0.8f, 0.8f));
-    updateUniformBuffer2(currentFrame, cubeModel2, true);
+    glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0, 0));
+    sphereModel = glm::scale(sphereModel, glm::vec3(0.8f, 0.8f, 0.8f));
+    updateUniformBuffer2(currentFrame, sphereModel, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
 
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
