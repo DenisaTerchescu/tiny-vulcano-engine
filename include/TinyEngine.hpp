@@ -189,7 +189,6 @@ class TinyEngine {
     };
 
 
-
 	std::vector<uint32_t> indices = {
 		16, 17, 18, 16, 18, 19, // Front
 4,   5,  6,  4,  6,  7, // Back
