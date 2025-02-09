@@ -29,11 +29,11 @@ void TinyEngine::run() {
 void TinyEngine::initVulkan() {
     instance.init();
     tinyDevice.init(instance.getInstance(), window.getWindow());
-    swapChain.init(tinyDevice, window.getWindow());
+    swapChain.init(tinyDevice, window.getWindow(), depth);
     pipeline.init(tinyDevice, swapChain);
-    depth.createDepthResources(tinyDevice, command, swapChain, texture);
-    swapChain.createFramebuffers(tinyDevice);
     command.createCommandPool(tinyDevice);
+    depth.createDepthResources(tinyDevice, command, swapChain, texture);
+    swapChain.createFramebuffers(tinyDevice, depth);
     texture.init(tinyDevice, command, tinyBuffer);
     loadModel();
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
@@ -150,7 +150,7 @@ void TinyEngine::drawFrame() {
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.framebufferResized) {
         window.framebufferResized = false;
-        swapChain.recreateSwapChain(tinyDevice, window);
+        swapChain.recreateSwapChain(tinyDevice, window, depth);
         return;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -242,9 +242,16 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = swapChain.getSwapChainExtent();
 
-    VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+   /* VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
     renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
+    renderPassInfo.pClearValues = &clearColor;*/
+
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+    clearValues[1].depthStencil = { 1.0f, 0 };
+
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
