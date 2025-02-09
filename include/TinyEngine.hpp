@@ -20,6 +20,7 @@
 #include <chrono>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
+#include <string>
 
 #include "TinyWindow.hpp"
 #include "TinyInstance.hpp"
@@ -45,19 +46,29 @@ template<> struct hash<TinyPipeline::Vertex> {
 };
 
 class TinyEngine {
-    
-    glm::vec3 glassContainer = { 1.25f,0,0 };
-	glm::vec3 sphere = glm::vec3(-1.5f, 0, 0);
 
-    struct Camera {
-        float yaw = 90.0f;
-        float pitch = 0.0f;
-        glm::vec3 pos = { 0, 0.5f, -6 };
-        glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
-    };
+	glm::vec3 glassContainer = { 1.25f,0,0 };
+	glm::vec3 spherePosition = glm::vec3(-1.5f, 0, 0);
+
+	struct Camera {
+		float yaw = 90.0f;
+		float pitch = 0.0f;
+		glm::vec3 pos = { 0, 0.5f, -6 };
+		glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
+	};
+
+	struct Cube {
+		glm::vec3 min;
+		glm::vec3 max;
+	};
+
+	struct Sphere {
+		glm::vec3 center;
+		float radius;
+	};
 
 
-    std::vector<TinyPipeline::Vertex> vertices = {
+	std::vector<TinyPipeline::Vertex> vertices = {
 		{{-1.0f, +1.0f, +1.0f}, // 0
 	{0, 1, 0},			 // color
 	{0, 0},				 //uv
@@ -177,7 +188,7 @@ class TinyEngine {
    {0, 1, 0},			 // color
    {1 , 1 },				 //uv
 {+0.0f, -1.0f, +0.0f}}, // Normal
-    };
+	};
 
 
 	std::vector<uint32_t> indices = {
@@ -190,10 +201,12 @@ class TinyEngine {
 	};
 
 
-    int frameCount = 0;
-    float fps = 0.0f;
-    float fpsUpdateInterval = 1.0f; 
-    float timeAccumulator = 0.0f;
+	int frameCount = 0;
+	float fps = 0.0f;
+	float fpsUpdateInterval = 1.0f;
+	float timeAccumulator = 0.0f;
+	string collisionDetectedText = "";
+
 public:
     void run();
 
@@ -244,5 +257,7 @@ public:
     void SetupImGuiStyle();
     
     void drawUI();
+
+	bool CheckCollision(const Cube& cube, const Sphere& spherePosition);
 
 };

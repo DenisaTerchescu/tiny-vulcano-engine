@@ -11,6 +11,13 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 
+
+bool TinyEngine::CheckCollision(const Cube& cube, const Sphere& spherePosition) {
+    glm::vec3 closestPoint = glm::clamp(spherePosition.center, cube.min, cube.max);
+    float distance = glm::distance(spherePosition.center, closestPoint);
+    return distance < spherePosition.radius;
+}
+
 void TinyEngine::run() {
     window.initWindow();
     initVulkan();
@@ -24,9 +31,9 @@ void TinyEngine::initVulkan() {
     tinyDevice.init(instance.getInstance(), window.getWindow());
     swapChain.init(tinyDevice, window.getWindow());
     pipeline.init(tinyDevice, swapChain);
+    depth.createDepthResources(tinyDevice, command, swapChain, texture);
     swapChain.createFramebuffers(tinyDevice);
     command.createCommandPool(tinyDevice);
-    depth.createDepthResources(tinyDevice, swapChain, texture);
     texture.init(tinyDevice, command, tinyBuffer);
     loadModel();
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
@@ -54,6 +61,17 @@ void TinyEngine::mainLoop() {
             glfwGetCursorPos(window.window, &x, &y);
             window.input.mousePos = { x,y };
         }
+
+        Cube cube = { glm::vec3(-0.8f, -0.8f, -0.8f), glm::vec3(0.8f, 0.8f, 0.8f) };
+        Sphere sphere = { spherePosition, 0.5f};
+
+        if (CheckCollision(cube, sphere)) {
+            collisionDetectedText = "Collision detected!";
+        }
+        else {
+            collisionDetectedText = "No collision!!";
+        }
+
         
         auto start = std::chrono::high_resolution_clock::now();
 
@@ -266,7 +284,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 
     // Drawing the sphere model
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
-    glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), sphere);
+    glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), spherePosition);
     sphereModel = glm::scale(sphereModel, glm::vec3(1.2f, 1.2f, 1.2f));
     updateUniformBuffer2(currentFrame, sphereModel, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
@@ -491,9 +509,12 @@ void TinyEngine::drawUI()
 
     ImGui::Text("%.2f FPS", fps);
     ImGui::Spacing();
+    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), collisionDetectedText.c_str());
     ImGui::Spacing();
 
-    ImGui::DragFloat3("Sphere position", &sphere[0]);
+    ImGui::DragFloat3("Sphere position", &spherePosition[0]);
+    ImGui::DragFloat3("Cube position", &glassContainer[0]);
+
     ImGui::Spacing();
     ImGui::Spacing();
     ImGui::Text("WASDEQ - Move camera");
