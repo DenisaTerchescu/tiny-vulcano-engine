@@ -62,7 +62,7 @@ void TinyEngine::mainLoop() {
             window.input.mousePos = { x,y };
         }
 
-        Cube cube = { glm::vec3(-0.8f, -0.8f, -0.8f), glm::vec3(0.8f, 0.8f, 0.8f) };
+        Cube cube = { glm::vec3(-0.8f, -0.8f, -0.8f) + glassContainer, glm::vec3(0.8f, 0.8f, 0.8f) + glassContainer};
         Sphere sphere = { spherePosition, 0.5f};
 
         if (CheckCollision(cube, sphere)) {
@@ -278,7 +278,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-  
+
     // Drawing the cube
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
     glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y, glassContainer.z));
@@ -519,8 +519,8 @@ void TinyEngine::drawUI()
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), collisionDetectedText.c_str());
     ImGui::Spacing();
 
-    ImGui::DragFloat3("Sphere position", &spherePosition[0]);
-    ImGui::DragFloat3("Cube position", &glassContainer[0]);
+    ImGui::DragFloat3("Sphere position", &spherePosition[0], 0.1f);
+    ImGui::DragFloat3("Cube position", &glassContainer[0], 0.1f);
 
     ImGui::Spacing();
     ImGui::Spacing();
