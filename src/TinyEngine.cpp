@@ -18,6 +18,14 @@ bool TinyEngine::CheckCollision(const Cube& cube, const Sphere& spherePosition) 
     return distance < spherePosition.radius;
 }
 
+bool TinyEngine::CheckCollisionAABB(const Cube& cube1, const Cube& cube2) {
+    if (cube1.max.x < cube2.min.x || cube1.min.x > cube2.max.x) return false; 
+    if (cube1.max.y < cube2.min.y || cube1.min.y > cube2.max.y) return false; 
+    if (cube1.max.z < cube2.min.z || cube1.min.z > cube2.max.z) return false; 
+    return true;
+}
+
+
 void TinyEngine::run() {
     window.initWindow();
     initVulkan();
@@ -62,14 +70,24 @@ void TinyEngine::mainLoop() {
             window.input.mousePos = { x,y };
         }
 
-        Cube cube = { glm::vec3(-0.8f, -0.8f, -0.8f) + glassContainer, glm::vec3(0.8f, 0.8f, 0.8f) + glassContainer};
+        Cube cube1 = { glm::vec3(-0.8f, -0.8f, -0.8f) + glassContainer, glm::vec3(0.8f, 0.8f, 0.8f) + glassContainer};
+        Cube cube2 = { glm::vec3(-0.8f, -0.8f, -0.8f) + secondCube, glm::vec3(0.8f, 0.8f, 0.8f) + secondCube};
         Sphere sphere = { spherePosition, 0.5f};
 
-        if (CheckCollision(cube, sphere)) {
+        if (CheckCollision(cube1, sphere)) {
             collisionDetectedText = "Collision detected!";
         }
         else {
             collisionDetectedText = "No collision!!";
+        }
+
+        if (secondCubeShown) {
+            if (CheckCollisionAABB(cube1, cube2)) {
+                collisionDetectedText = "Collision detected!";
+            }
+            else {
+                collisionDetectedText = "No collision!!";
+            }
         }
 
         
@@ -286,10 +304,18 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     updateUniformBuffer(currentFrame, cubeModel, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    // Drawing the second cube
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
+    //glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0, 0));
+    //cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.8f, 0.8f, 0.8f));
+    //updateUniformBuffer2(currentFrame, cubeModel2, true);
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+    //secondCubeShown = true;
 
     // Drawing the sphere model
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
     glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), spherePosition);
     sphereModel = glm::scale(sphereModel, glm::vec3(1.2f, 1.2f, 1.2f));
