@@ -34,8 +34,6 @@ public:
     void createDescriptorPool(TinyDevice& device);
     void createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
         VkSampler textureSampler);
-    void createDescriptorSets2(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
-        VkSampler textureSampler);
 
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
@@ -47,19 +45,16 @@ public:
     VkBuffer modelIndexBuffer;
     VkDeviceMemory modelIndexBufferMemory;
 
-    std::vector<VkBuffer> uniformBuffersCube1;
-    std::vector<VkDeviceMemory> uniformBuffersMemoryCube1;
-    std::vector<void*> uniformBuffersMappedCube1;
+    std::vector<std::vector<VkBuffer>> uniformBuffers;         // [object][frame]
+    std::vector<std::vector<VkDeviceMemory>> uniformBuffersMemory;
+    std::vector<std::vector<void*>> uniformBuffersMapped;
 
-    std::vector<VkBuffer> uniformBuffersCube2;
-    std::vector<VkDeviceMemory> uniformBuffersMemoryCube2;
-    std::vector<void*> uniformBuffersMappedCube2;
+    std::vector<std::vector<VkDescriptorSet>> descriptorSets; // [object][frame]
 
     VkDescriptorPool descriptorPool;
-    std::vector<VkDescriptorSet> descriptorSetsCube1;
-    std::vector<VkDescriptorSet> descriptorSetsCube2;
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
+    size_t objectCount = 2;
 };
 
 

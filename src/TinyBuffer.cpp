@@ -11,11 +11,11 @@ void TinyBuffer::cleanup(TinyDevice& device) {
 }
 
 void TinyBuffer::cleanupUniformBuffers(TinyDevice& device) {
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroyBuffer(device.getDevice(), uniformBuffersCube1[i], nullptr);
-        vkFreeMemory(device.getDevice(), uniformBuffersMemoryCube1[i], nullptr);
-        vkDestroyBuffer(device.getDevice(), uniformBuffersCube2[i], nullptr);
-        vkFreeMemory(device.getDevice(), uniformBuffersMemoryCube2[i], nullptr);
+    for (size_t obj = 0; obj < objectCount; obj++) {
+        for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++) {
+            vkDestroyBuffer(device.getDevice(), uniformBuffers[obj][frame], nullptr);
+            vkFreeMemory(device.getDevice(), uniformBuffersMemory[obj][frame], nullptr);
+        }
     }
 
     vkDestroyDescriptorPool(device.getDevice(), descriptorPool, nullptr);
@@ -103,27 +103,29 @@ void TinyBuffer::copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer s
 
 void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
     VkSampler textureSampler) {
-    VkDeviceSize bufferSize = 2 * sizeof(UniformBufferObject);
+    VkDeviceSize bufferSize = this->objectCount * sizeof(UniformBufferObject);
 
-    uniformBuffersCube1.resize(2);
-    uniformBuffersMemoryCube1.resize(2);
-    uniformBuffersMappedCube1.resize(2);
+    uniformBuffers.resize(this->objectCount);
+    uniformBuffersMemory.resize(this->objectCount);
+    uniformBuffersMapped.resize(this->objectCount);
 
-    uniformBuffersCube2.resize(2);
-    uniformBuffersMemoryCube2.resize(2);
-    uniformBuffersMappedCube2.resize(2);
 
-    for (size_t i = 0; i < 2; i++) {
-        createBuffer(device, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffersCube1[i], uniformBuffersMemoryCube1[i]);
-        createBuffer(device, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffersCube2[i], uniformBuffersMemoryCube2[i]);
+    for (size_t obj = 0; obj < objectCount; obj++) {
+        uniformBuffers[obj].resize(MAX_FRAMES_IN_FLIGHT);
+        uniformBuffersMemory[obj].resize(MAX_FRAMES_IN_FLIGHT);
+        uniformBuffersMapped[obj].resize(MAX_FRAMES_IN_FLIGHT);
 
-        vkMapMemory(device.getDevice(), uniformBuffersMemoryCube1[i], 0, bufferSize, 0, &uniformBuffersMappedCube1[i]);
-        vkMapMemory(device.getDevice(), uniformBuffersMemoryCube2[i], 0, bufferSize, 0, &uniformBuffersMappedCube2[i]);
+        for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++) {
+            createBuffer(device, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                uniformBuffers[obj][frame], uniformBuffersMemory[obj][frame]);
+
+            vkMapMemory(device.getDevice(), uniformBuffersMemory[obj][frame], 0, bufferSize, 0, &uniformBuffersMapped[obj][frame]);
+        }
     }
+
 
     createDescriptorPool(device);
     createDescriptorSets(device, pipeline, textureImageView, textureSampler);
-    createDescriptorSets2(device, pipeline, textureImageView, textureSampler);
 
 }
 
@@ -145,100 +147,55 @@ void TinyBuffer::createDescriptorPool(TinyDevice& device) {
     }
 }
 
-void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
-    VkSampler textureSampler) {
+void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView, VkSampler textureSampler) {
     std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, pipeline.descriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-    allocInfo.pSetLayouts = layouts.data();
 
-    descriptorSetsCube1.resize(MAX_FRAMES_IN_FLIGHT);
-    if (vkAllocateDescriptorSets(device.getDevice(), &allocInfo, descriptorSetsCube1.data()) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate descriptor sets!");
+    descriptorSets.resize(objectCount);
+
+    for (size_t obj = 0; obj < objectCount; obj++) {
+        descriptorSets[obj].resize(MAX_FRAMES_IN_FLIGHT);
+
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = descriptorPool;
+        allocInfo.descriptorSetCount = MAX_FRAMES_IN_FLIGHT;
+        allocInfo.pSetLayouts = layouts.data();
+
+        if (vkAllocateDescriptorSets(device.getDevice(), &allocInfo, descriptorSets[obj].data()) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate descriptor sets!");
+        }
+
+        for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++) {
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = uniformBuffers[obj][frame];
+            bufferInfo.offset = 0;
+            bufferInfo.range = sizeof(UniformBufferObject);
+
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo.imageView = textureImageView;
+            imageInfo.sampler = textureSampler;
+
+            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[0].dstSet = descriptorSets[obj][frame];
+            descriptorWrites[0].dstBinding = 0;
+            descriptorWrites[0].dstArrayElement = 0;
+            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrites[0].descriptorCount = 1;
+            descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[1].dstSet = descriptorSets[obj][frame];
+            descriptorWrites[1].dstBinding = 1;
+            descriptorWrites[1].dstArrayElement = 0;
+            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptorWrites[1].descriptorCount = 1;
+            descriptorWrites[1].pImageInfo = &imageInfo;
+
+            vkUpdateDescriptorSets(device.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+        }
     }
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffersCube1[i];
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
-
-
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = textureImageView;
-        imageInfo.sampler = textureSampler;
-
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = descriptorSetsCube1[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = descriptorSetsCube1[i];
-        descriptorWrites[1].dstBinding = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pImageInfo = &imageInfo;
-
-        vkUpdateDescriptorSets(device.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-    }
-
 }
 
-void TinyBuffer::createDescriptorSets2(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
-    VkSampler textureSampler) {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, pipeline.descriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-    allocInfo.pSetLayouts = layouts.data();
-
-    descriptorSetsCube2.resize(MAX_FRAMES_IN_FLIGHT);
-    if (vkAllocateDescriptorSets(device.getDevice(), &allocInfo, descriptorSetsCube2.data()) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate descriptor sets!");
-    }
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffersCube2[i];
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
-
-
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = textureImageView;
-        imageInfo.sampler = textureSampler;
-
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = descriptorSetsCube2[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = descriptorSetsCube2[i];
-        descriptorWrites[1].dstBinding = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pImageInfo = &imageInfo;
-
-        vkUpdateDescriptorSets(device.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-    }
-
-}
