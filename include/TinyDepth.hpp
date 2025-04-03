@@ -1,7 +1,9 @@
 #pragma once
 
+
 #include <vulkan/vulkan.h>
 #define GLFW_INCLUDE_VULKAN
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "TinyDevice.hpp"
 #include "TinySwapchain.hpp"
 #include "TinyTexture.hpp"
@@ -15,7 +17,7 @@ public:
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 
-    void createDepthResources(TinyDevice& device, TinySwapChain& swapChain, TinyTexture& texture);
+    void createDepthResources(TinyDevice& device, TinyCommand& command, TinySwapChain& swapChain, TinyTexture& texture);
     VkFormat findSupportedFormat(TinyDevice& device, const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     
     VkFormat findDepthFormat(TinyDevice& device);

@@ -7,6 +7,9 @@
 #include "TinyDevice.hpp"
 #include "TinyWindow.hpp"
 
+
+class TinyDepth;
+
 class TinySwapChain {
 
     struct SwapChainSupportDetails {
@@ -16,7 +19,7 @@ class TinySwapChain {
     };
 
 public:
-    void init(TinyDevice& device, GLFWwindow* window);
+    void init(TinyDevice& device, GLFWwindow* window, TinyDepth& depth);
     void cleanup(TinyDevice& device);
 
     VkSwapchainKHR getSwapChain() const;
@@ -27,7 +30,7 @@ public:
     VkRenderPass getRenderPass() const;
     const std::vector<VkFramebuffer> getSwapChainFramebuffers() const;
 
-    void createRenderPass(TinyDevice& device);
+    void createRenderPass(TinyDevice& device, TinyDepth& depth);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
@@ -35,8 +38,8 @@ public:
     VkImageView createImageView(TinyDevice& device, VkImage image, VkFormat format,
         VkImageAspectFlags aspectFlags, uint32_t mipLevels);
 
-    void createFramebuffers(TinyDevice& device);
-    void recreateSwapChain(TinyDevice& device, TinyWindow& window);
+    void createFramebuffers(TinyDevice& device, TinyDepth& depth);
+    void recreateSwapChain(TinyDevice& device, TinyWindow& window, TinyDepth& depth);
 
 private:
     VkRenderPass renderPass;

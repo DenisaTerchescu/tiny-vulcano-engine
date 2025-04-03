@@ -1,13 +1,13 @@
 #pragma once
 #include <glm/vec2.hpp>
 
-struct Button
+struct TinyButton
 {
 
 	char pressed = 0;
 	char held = 0;
 	char released = 0;
-	char state = -1; //for internal use
+	char state = -1;
 
 	enum
 	{
@@ -25,10 +25,10 @@ struct Button
 		Tab,
 		LeftShift,
 		LeftAlt,
-		BUTTONS_COUNT, //
+		BUTTONS_COUNT, 
 	};
 
-    void updateButton()
+    void updateTinyButton()
     {
         if (state == 1)
         {
@@ -63,30 +63,30 @@ struct Button
 };
 
 
-struct Input {
+struct TinyInput {
 
-	Button keyBoard[Button::BUTTONS_COUNT] = {};
-	Button leftMouse = {};
-	Button rightMouse = {};
+	TinyButton keyBoard[TinyButton::BUTTONS_COUNT] = {};
+	TinyButton leftMouse = {};
+	TinyButton rightMouse = {};
 
 	glm::ivec2 mousePos = {};
 	glm::ivec2 lastPos = {};
 	glm::ivec2 delta = {};
 
-	void resetInput()
+	void resetTinyInput()
 	{
 		*this = {};
 	}
 
-	void updateInput()
+	void updateTinyInput()
 	{
-        for (int i = 0; i < Button::BUTTONS_COUNT; i++)
+        for (int i = 0; i < TinyButton::BUTTONS_COUNT; i++)
         {
-            keyBoard[i].updateButton();
+            keyBoard[i].updateTinyButton();
         }
 
-        leftMouse.updateButton();
-        rightMouse.updateButton();
+        leftMouse.updateTinyButton();
+        rightMouse.updateTinyButton();
 	}
 
 };

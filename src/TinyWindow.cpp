@@ -28,8 +28,6 @@
 	}
 
 	void TinyWindow::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-		//auto app = reinterpret_cast<TinyEngine*>(glfwGetWindowUserPointer(window));
-		//app->framebufferResized = true;
 
 		auto realWindow = reinterpret_cast<TinyWindow*>(glfwGetWindowUserPointer(window));
 		realWindow->framebufferResized = true;
@@ -46,21 +44,17 @@
 		else
 		{
 			realWindow->focused = 0;
-			//if you not capture the release event when the window loses focus,
-			//the buttons will stay pressed
-			realWindow->input.resetInput();
+			realWindow->input.resetTinyInput();
 		}
 
 	}
 
 	void TinyWindow::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 		if (action == GLFW_PRESS) {
-			// Handle key press event
 			switch (key) {
 			case GLFW_KEY_ESCAPE:
 				glfwSetWindowShouldClose(window, GLFW_TRUE);
 				break;
-				// Handle other keys here
 			}
 		}
 
@@ -83,12 +77,12 @@
 	if(key >= GLFW_KEY_A && key <= GLFW_KEY_Z)
 	{
 		int index = key - GLFW_KEY_A;
-		realWindow->input.keyBoard[index + Button::A].state = state;
+		realWindow->input.keyBoard[index + TinyButton::A].state = state;
 
 	}else if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
 	{
 		int index = key - GLFW_KEY_0;
-		realWindow->input.keyBoard[index + Button::NR0].state = state;
+		realWindow->input.keyBoard[index + TinyButton::NR0].state = state;
 	}else
 	{
 	//special keys
@@ -96,54 +90,54 @@
 
 		if (key == GLFW_KEY_SPACE)
 		{
-			realWindow->input.keyBoard[Button::Space].state = state;
+			realWindow->input.keyBoard[TinyButton::Space].state = state;
 		}
 		else
 		if (key == GLFW_KEY_ENTER)
 		{
-			realWindow->input.keyBoard[Button::Enter].state = state;
+			realWindow->input.keyBoard[TinyButton::Enter].state = state;
 		}
 		else
 		if (key == GLFW_KEY_ESCAPE)
 		{
-			realWindow->input.keyBoard[Button::Escape].state = state;
+			realWindow->input.keyBoard[TinyButton::Escape].state = state;
 		}
 		else
 		if (key == GLFW_KEY_UP)
 		{
-			realWindow->input.keyBoard[Button::Up].state = state;
+			realWindow->input.keyBoard[TinyButton::Up].state = state;
 		}
 		else
 		if (key == GLFW_KEY_DOWN)
 		{
-			realWindow->input.keyBoard[Button::Down].state = state;
+			realWindow->input.keyBoard[TinyButton::Down].state = state;
 		}
 		else
 		if (key == GLFW_KEY_LEFT)
 		{
-			realWindow->input.keyBoard[Button::Left].state = state;
+			realWindow->input.keyBoard[TinyButton::Left].state = state;
 		}
 		else
 		if (key == GLFW_KEY_RIGHT)
 		{
-			realWindow->input.keyBoard[Button::Right].state = state;
+			realWindow->input.keyBoard[TinyButton::Right].state = state;
 		}
 		else
 		if (key == GLFW_KEY_LEFT_CONTROL)
 		{
-			realWindow->input.keyBoard[Button::LeftCtrl].state = state;
+			realWindow->input.keyBoard[TinyButton::LeftCtrl].state = state;
 		}else
 		if (key == GLFW_KEY_TAB)
 		{
-			realWindow->input.keyBoard[Button::Tab].state = state;
+			realWindow->input.keyBoard[TinyButton::Tab].state = state;
 		}else
 		if (key == GLFW_KEY_LEFT_SHIFT)
 		{
-			realWindow->input.keyBoard[Button::LeftShift].state = state;
+			realWindow->input.keyBoard[TinyButton::LeftShift].state = state;
 		}else
 		if (key == GLFW_KEY_LEFT_ALT)
 		{
-			realWindow->input.keyBoard[Button::LeftAlt].state = state;
+			realWindow->input.keyBoard[TinyButton::LeftAlt].state = state;
 		}
 	}
 	}

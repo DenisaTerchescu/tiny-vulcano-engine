@@ -3,6 +3,8 @@
 
 int main() {
 
+    ShellExecute(0, "open", (RESOURCES_PATH "shaders/compile_simple.bat"), nullptr, nullptr, SW_SHOW);
+
     TinyEngine engine;
 
     try {

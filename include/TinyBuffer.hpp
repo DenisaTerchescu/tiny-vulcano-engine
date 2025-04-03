@@ -15,13 +15,16 @@ public:
         glm::mat4 model;
         glm::mat4 view;
         glm::mat4 proj;
+        glm::vec3 viewPos;
     };
 
     void cleanup(TinyDevice& device);
     void cleanupUniformBuffers(TinyDevice& device);
 
-    void createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<TinyPipeline::Vertex>& vertices);
-    void createIndexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<uint16_t>& indices);
+    void createVertexBuffer(TinyDevice& device, TinyCommand& command, const std::vector<TinyPipeline::Vertex>& vertices,
+        VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory);
+    void createIndexBuffer(TinyDevice& device, TinyCommand& command, 
+        const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory);
 
     void createBuffer(TinyDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -31,17 +34,30 @@ public:
     void createDescriptorPool(TinyDevice& device);
     void createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
         VkSampler textureSampler);
+    void createDescriptorSets2(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
+        VkSampler textureSampler);
 
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
 
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    std::vector<void*> uniformBuffersMapped;
+    VkBuffer modelVertexBuffer;
+    VkDeviceMemory modelVertexBufferMemory;
+    VkBuffer modelIndexBuffer;
+    VkDeviceMemory modelIndexBufferMemory;
+
+    std::vector<VkBuffer> uniformBuffersCube1;
+    std::vector<VkDeviceMemory> uniformBuffersMemoryCube1;
+    std::vector<void*> uniformBuffersMappedCube1;
+
+    std::vector<VkBuffer> uniformBuffersCube2;
+    std::vector<VkDeviceMemory> uniformBuffersMemoryCube2;
+    std::vector<void*> uniformBuffersMappedCube2;
+
     VkDescriptorPool descriptorPool;
-    std::vector<VkDescriptorSet> descriptorSets;
+    std::vector<VkDescriptorSet> descriptorSetsCube1;
+    std::vector<VkDescriptorSet> descriptorSetsCube2;
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
 };
