@@ -49,8 +49,10 @@ class TinyEngine {
 
 	glm::vec3 glassContainer = { 1.25f,0,0 };
 	glm::vec3 spherePosition = glm::vec3(-1.5f, 0, 0);
+	glm::vec3 spherePosition2 = glm::vec3(1.25f, 0, 0);
 	glm::vec3 secondCube = glm::vec3(3.0f, 0, 0);
 	bool secondCubeShown = false;
+	bool secondSphereShown = false;
 
 	struct Camera {
 		float yaw = 90.0f;
@@ -260,8 +262,13 @@ public:
     
     void drawUI();
 
-	bool CheckCollision(const Cube& cube, const Sphere& spherePosition);
+
+	bool CheckCollisionSphere(const Sphere& sphere1, const Sphere& sphere2);
 
 	bool CheckCollisionAABB(const Cube& cube1, const Cube& cube2);
+
+	bool CheckCollisionAABBSphere(const Cube& cube, const Sphere& spherePosition);
+
+
 
 };

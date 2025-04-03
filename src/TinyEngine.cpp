@@ -11,18 +11,23 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 
-
-bool TinyEngine::CheckCollision(const Cube& cube, const Sphere& spherePosition) {
-    glm::vec3 closestPoint = glm::clamp(spherePosition.center, cube.min, cube.max);
-    float distance = glm::distance(spherePosition.center, closestPoint);
-    return distance < spherePosition.radius;
+bool TinyEngine::CheckCollisionSphere(const Sphere& sphere1, const Sphere& sphere2) {
+    float dist = glm::distance(sphere1.center, sphere2.center);
+    float radiusSum = sphere1.radius + sphere2.radius;
+    return dist < radiusSum;
 }
 
 bool TinyEngine::CheckCollisionAABB(const Cube& cube1, const Cube& cube2) {
-    if (cube1.max.x < cube2.min.x || cube1.min.x > cube2.max.x) return false; 
-    if (cube1.max.y < cube2.min.y || cube1.min.y > cube2.max.y) return false; 
-    if (cube1.max.z < cube2.min.z || cube1.min.z > cube2.max.z) return false; 
+    if (cube1.max.x < cube2.min.x || cube1.min.x > cube2.max.x) return false;
+    if (cube1.max.y < cube2.min.y || cube1.min.y > cube2.max.y) return false;
+    if (cube1.max.z < cube2.min.z || cube1.min.z > cube2.max.z) return false;
     return true;
+}
+
+bool TinyEngine::CheckCollisionAABBSphere(const Cube& cube, const Sphere& spherePosition) {
+    glm::vec3 closestPoint = glm::clamp(spherePosition.center, cube.min, cube.max);
+    float distance = glm::distance(spherePosition.center, closestPoint);
+    return distance < spherePosition.radius;
 }
 
 
@@ -72,17 +77,27 @@ void TinyEngine::mainLoop() {
 
         Cube cube1 = { glm::vec3(-0.8f, -0.8f, -0.8f) + glassContainer, glm::vec3(0.8f, 0.8f, 0.8f) + glassContainer};
         Cube cube2 = { glm::vec3(-0.8f, -0.8f, -0.8f) + secondCube, glm::vec3(0.8f, 0.8f, 0.8f) + secondCube};
-        Sphere sphere = { spherePosition, 0.5f};
-
-        if (CheckCollision(cube1, sphere)) {
-            collisionDetectedText = "Collision detected!";
-        }
-        else {
-            collisionDetectedText = "No collision!!";
-        }
+        Sphere sphere1 = { spherePosition, 0.5f};
+        Sphere sphere2 = { spherePosition2, 0.5f};
 
         if (secondCubeShown) {
             if (CheckCollisionAABB(cube1, cube2)) {
+                collisionDetectedText = "Collision detected!";
+            }
+            else {
+                collisionDetectedText = "No collision!!";
+            }
+        }
+        else if (secondSphereShown) {
+            if (CheckCollisionSphere(sphere1, sphere2)) {
+                collisionDetectedText = "Collision detected!";
+            }
+            else {
+                collisionDetectedText = "No collision!!";
+            }
+        }
+        else {
+            if (CheckCollisionAABBSphere(cube1, sphere1)) {
                 collisionDetectedText = "Collision detected!";
             }
             else {
@@ -294,10 +309,11 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     //vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
 
     // Drawing the cube
+     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
     glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y, glassContainer.z));
     cubeModel = glm::scale(cubeModel, glm::vec3(0.8f, 0.8f, 0.8f));
@@ -313,14 +329,29 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
     //secondCubeShown = true;
 
-    // Drawing the sphere model
+
+        // Drawing the second sphere model
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
+    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
+    //glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), spherePosition2);
+    //sphereModel2 = glm::scale(sphereModel2, glm::vec3(1.2f, 1.2f, 1.2f));
+    //updateUniformBuffer(currentFrame, sphereModel2, true);
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
+    //secondSphereShown = true;
+
+    // Drawing the sphere model
+    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
     glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), spherePosition);
     sphereModel = glm::scale(sphereModel, glm::vec3(1.2f, 1.2f, 1.2f));
     updateUniformBuffer2(currentFrame, sphereModel, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
+
 
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 
