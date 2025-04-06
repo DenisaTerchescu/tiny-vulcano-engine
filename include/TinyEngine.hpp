@@ -32,9 +32,14 @@
 #include "TinyTexture.hpp"
 #include "TinyDepth.hpp"
 #include "TinySync.hpp"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const std::string MODEL_PATH = RESOURCES_PATH "models/ball.obj";
+const std::string MODEL_PATH = RESOURCES_PATH "models/barrel.obj";
 
 template<> struct hash<TinyPipeline::Vertex> {
     size_t operator()(TinyPipeline::Vertex const& vertex) const {
@@ -242,6 +247,13 @@ public:
     void drawFrame();
 
 	void loadModel();
+	void loadModelAssimp();
+
+	void processNode(aiNode* node, const aiScene* scene,
+		std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices);
+
+	void processMesh(aiMesh* mesh, const aiScene* scene,
+		std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices);
 
     void cleanup();
 

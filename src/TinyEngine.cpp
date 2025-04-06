@@ -10,6 +10,9 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 bool TinyEngine::CheckCollisionSphere(const Sphere& sphere1, const Sphere& sphere2) {
     float dist = glm::distance(sphere1.center, sphere2.center);
@@ -48,7 +51,7 @@ void TinyEngine::initVulkan() {
     depth.createDepthResources(tinyDevice, command, swapChain, texture);
     swapChain.createFramebuffers(tinyDevice, depth);
     texture.init(tinyDevice, command, tinyBuffer);
-    loadModel();
+    loadModelAssimp();
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices,tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
     tinyBuffer.createVertexBuffer(tinyDevice, command, modelVertices, tinyBuffer.modelVertexBuffer, tinyBuffer.modelVertexBufferMemory);
@@ -174,6 +177,85 @@ void TinyEngine::loadModel() {
         }
     }
 }
+
+void TinyEngine::loadModelAssimp() {
+    Assimp::Importer importer;
+
+    const aiScene* scene = importer.ReadFile(
+        MODEL_PATH,
+        aiProcess_Triangulate |
+        aiProcess_FlipUVs |
+        aiProcess_GenNormals |
+        aiProcess_JoinIdenticalVertices
+    );
+
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+        return;
+    }
+
+    std::unordered_map<TinyPipeline::Vertex, uint32_t> uniqueVertices{};
+    processNode(scene->mRootNode, scene, uniqueVertices);
+}
+
+void TinyEngine::processNode(aiNode* node, const aiScene* scene,
+    std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices) {
+    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        processMesh(mesh, scene, uniqueVertices);
+    }
+
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        processNode(node->mChildren[i], scene, uniqueVertices);
+    }
+}
+
+void TinyEngine::processMesh(aiMesh* mesh, const aiScene* scene,
+    std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices) {
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        TinyPipeline::Vertex vertex{};
+
+        // Position
+        vertex.pos = {
+            mesh->mVertices[i].x,
+            mesh->mVertices[i].y,
+            mesh->mVertices[i].z
+        };
+
+        // Normals
+        if (mesh->HasNormals()) {
+            vertex.normal = {
+                mesh->mNormals[i].x,
+                mesh->mNormals[i].y,
+                mesh->mNormals[i].z
+            };
+        }
+
+        // TexCoords (only the first set)
+        if (mesh->mTextureCoords[0]) {
+            vertex.texCoord = {
+                mesh->mTextureCoords[0][i].x,
+                1.0f - mesh->mTextureCoords[0][i].y // Flip V
+            };
+        }
+
+        vertex.color = { 1.0f, 1.0f, 1.0f }; // default color
+
+        if (uniqueVertices.count(vertex) == 0) {
+            uniqueVertices[vertex] = static_cast<uint32_t>(modelVertices.size());
+            modelVertices.push_back(vertex);
+        }
+    }
+
+    // Indices
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+        aiFace face = mesh->mFaces[i];
+        for (unsigned int j = 0; j < face.mNumIndices; j++) {
+            modelIndices.push_back(uniqueVertices[modelVertices[face.mIndices[j]]]);
+        }
+    }
+}
+
 
 void TinyEngine::drawFrame() {
     vkWaitForFences(tinyDevice.getDevice(), 1, &tinySync.inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
