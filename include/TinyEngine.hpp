@@ -210,6 +210,18 @@ class TinyEngine {
 	};
 
 
+	std::vector<TinyPipeline::Vertex> planeVertices = {
+	{{-0.5f, 0.0f, -0.5f}, {0, 1, 0}, {0.0f, 0.0f}},
+	{{ 0.5f, 0.0f, -0.5f}, {0, 1, 0}, {1.0f, 0.0f}},
+	{{ 0.5f, 0.0f,  0.5f}, {0, 1, 0}, {1.0f, 1.0f}},
+	{{-0.5f, 0.0f,  0.5f}, {0, 1, 0}, {0.0f, 1.0f}},
+	};
+
+	std::vector<uint32_t> planeIndices = {
+		0, 3, 2, 2, 1, 0
+	};
+
+
 	int frameCount = 0;
 	float fps = 0.0f;
 	float fpsUpdateInterval = 1.0f;

@@ -45,6 +45,11 @@ public:
     VkBuffer modelIndexBuffer;
     VkDeviceMemory modelIndexBufferMemory;
 
+    VkBuffer planeVertexBuffer;
+    VkDeviceMemory planeVertexBufferMemory;
+    VkBuffer planeIndexBuffer;
+    VkDeviceMemory planeIndexBufferMemory;
+
     std::vector<std::vector<VkBuffer>> uniformBuffers;         // [object][frame]
     std::vector<std::vector<VkDeviceMemory>> uniformBuffersMemory;
     std::vector<std::vector<void*>> uniformBuffersMapped;
@@ -54,7 +59,7 @@ public:
     VkDescriptorPool descriptorPool;
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
-    size_t objectCount = 5;
+    size_t objectCount = 10;
 };
 
 
