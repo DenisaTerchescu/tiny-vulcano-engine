@@ -427,13 +427,23 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     //secondSphereShown = true;
 
     // Drawing the sphere model
-    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
-    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
         0, 1, &tinyBuffer.descriptorSets[1][currentFrame], 0, nullptr);
     glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), spherePosition);
     sphereModel = glm::scale(sphereModel, glm::vec3(1.2f, 1.2f, 1.2f));
     updateUniformBuffer(1,currentFrame, sphereModel, true);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
+
+    // Drawing the third object
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
+        0, 1, &tinyBuffer.descriptorSets[2][currentFrame], 0, nullptr);
+    glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(1,0,0));
+    sphereModel = glm::scale(sphereModel2, glm::vec3(0.5f, 0.5f, 0.5f));
+    updateUniformBuffer(2, currentFrame, sphereModel2, true);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
 
 
