@@ -3,14 +3,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image/stb_image.h>
 
-void TinyTexture::init(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer) {
-    createTextureImage(device, command, tinyBuffer);
+void TinyTexture::init(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer, const std::string& texturePath) {
+    createTextureImage(device, command, tinyBuffer, texturePath);
     createTextureImageView(device);
     createTextureSampler(device);
 }
-void TinyTexture::createTextureImage(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer) {
+void TinyTexture::createTextureImage(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer,
+    const std::string& texturePath) {
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(texturePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 

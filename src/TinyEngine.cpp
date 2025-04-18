@@ -50,7 +50,7 @@ void TinyEngine::initVulkan() {
     command.createCommandPool(tinyDevice);
     depth.createDepthResources(tinyDevice, command, swapChain, texture);
     swapChain.createFramebuffers(tinyDevice, depth);
-    texture.init(tinyDevice, command, tinyBuffer);
+    texture.init(tinyDevice, command, tinyBuffer, TEXTURE_PATH);
     loadModelAssimp();
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices,tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
