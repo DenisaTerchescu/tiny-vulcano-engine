@@ -39,7 +39,7 @@
 
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const std::string MODEL_PATH = RESOURCES_PATH "models/ball.obj";
+const std::string BALL_MODEL_PATH = RESOURCES_PATH "models/ball.obj";
 
 const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
 const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
@@ -266,7 +266,7 @@ public:
 
     void drawFrame();
 
-	void loadModelAssimp();
+	void loadModelAssimp(const std::string modelPath);
 
 	void processNode(aiNode* node, const aiScene* scene,
 		std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices);

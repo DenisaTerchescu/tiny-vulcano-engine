@@ -53,7 +53,7 @@ void TinyEngine::initVulkan() {
     veryPinkTexture.init(tinyDevice, command, tinyBuffer, PINK_TEXTURE_PATH);
     pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
     floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
-    loadModelAssimp();
+    loadModelAssimp(BALL_MODEL_PATH);
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices,tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
     tinyBuffer.createVertexBuffer(tinyDevice, command, modelVertices, tinyBuffer.modelVertexBuffer, tinyBuffer.modelVertexBufferMemory);
@@ -135,11 +135,11 @@ void TinyEngine::mainLoop() {
     vkDeviceWaitIdle(tinyDevice.getDevice());
 }
 
-void TinyEngine::loadModelAssimp() {
+void TinyEngine::loadModelAssimp(const std::string modelPath) {
     Assimp::Importer importer;
 
     const aiScene* scene = importer.ReadFile(
-        MODEL_PATH,
+        modelPath,
         aiProcess_Triangulate |
         aiProcess_FlipUVs |
         aiProcess_GenNormals |
