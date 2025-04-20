@@ -106,8 +106,8 @@ void TinyBuffer::copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer s
     command.endSingleTimeCommands(commandBuffer, device);
 }
 
-void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
-    VkSampler textureSampler) {
+void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline, 
+    const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers) {
     VkDeviceSize bufferSize = this->objectCount * sizeof(UniformBufferObject);
 
     uniformBuffers.resize(this->objectCount);
@@ -130,7 +130,7 @@ void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline,
 
 
     createDescriptorPool(device);
-    createDescriptorSets(device, pipeline, textureImageView, textureSampler);
+    createDescriptorSets(device, pipeline, textureImageViews, textureSamplers);
 
 }
 
@@ -152,7 +152,8 @@ void TinyBuffer::createDescriptorPool(TinyDevice& device) {
     }
 }
 
-void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView, VkSampler textureSampler) {
+void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, 
+    const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers) {
     std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, pipeline.descriptorSetLayout);
 
     descriptorSets.resize(objectCount);
@@ -178,8 +179,8 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = textureImageView;
-            imageInfo.sampler = textureSampler;
+            imageInfo.imageView = textureImageViews[obj];
+            imageInfo.sampler = textureSamplers[obj];
 
             std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 

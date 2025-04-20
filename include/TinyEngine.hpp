@@ -41,9 +41,10 @@
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = RESOURCES_PATH "models/barrel.obj";
 
-const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
-//const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
-//const std::string WOOD_TEXTURE_PATH = RESOURCES_PATH "textures/wood.jpg";
+const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
+const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
+const std::string CUTE_PINK_TEXTURE_PATH = RESOURCES_PATH "textures/cute_pink.jpg";
+const std::string FLOOR_TEXTURE_PATH = RESOURCES_PATH "textures/pink_stone.png";
 
 template<> struct hash<TinyPipeline::Vertex> {
     size_t operator()(TinyPipeline::Vertex const& vertex) const {
@@ -252,6 +253,11 @@ public:
     TinyDepth depth;
 
     TinyTexture tinyTexture;
+
+    TinyTexture glassTexture;
+    TinyTexture pinkTexture;
+    TinyTexture floorTexture;
+
     Camera camera;
    
     uint32_t currentFrame = 0;
@@ -262,7 +268,6 @@ public:
 
     void drawFrame();
 
-	void loadModel();
 	void loadModelAssimp();
 
 	void processNode(aiNode* node, const aiScene* scene,

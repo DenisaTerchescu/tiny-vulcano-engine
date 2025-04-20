@@ -29,11 +29,11 @@ public:
     void createBuffer(TinyDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
-    void createUniformBuffers(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
-        VkSampler textureSampler);
+    void createUniformBuffers(TinyDevice& device, TinyPipeline pipeline, 
+        const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers);
     void createDescriptorPool(TinyDevice& device);
-    void createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, VkImageView textureImageView,
-        VkSampler textureSampler);
+    void createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, 
+        const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers);
 
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
@@ -59,7 +59,7 @@ public:
     VkDescriptorPool descriptorPool;
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
-    size_t objectCount = 10;
+    size_t objectCount = 4;
 };
 
 

@@ -50,7 +50,10 @@ void TinyEngine::initVulkan() {
     command.createCommandPool(tinyDevice);
     depth.createDepthResources(tinyDevice, command, swapChain, tinyTexture);
     swapChain.createFramebuffers(tinyDevice, depth);
-    tinyTexture.init(tinyDevice, command, tinyBuffer, GLASS_TEXTURE_PATH);
+    tinyTexture.init(tinyDevice, command, tinyBuffer, PINK_TEXTURE_PATH);
+    glassTexture.init(tinyDevice, command, tinyBuffer, GLASS_TEXTURE_PATH);
+    pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
+    floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
     loadModelAssimp();
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices,tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
@@ -58,7 +61,8 @@ void TinyEngine::initVulkan() {
     tinyBuffer.createIndexBuffer(tinyDevice, command, modelIndices, tinyBuffer.modelIndexBuffer, tinyBuffer.modelIndexBufferMemory);
     tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
-    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, tinyTexture.textureImageView, tinyTexture.textureSampler);
+    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { tinyTexture.textureImageView, pinkTexture.textureImageView, tinyTexture.textureImageView, floorTexture.textureImageView },
+        { tinyTexture.textureSampler, pinkTexture.textureSampler, tinyTexture.textureSampler, floorTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);
     tinySync.createSyncObjects(tinyDevice);
@@ -130,54 +134,6 @@ void TinyEngine::mainLoop() {
     }
 
     vkDeviceWaitIdle(tinyDevice.getDevice());
-}
-
-void TinyEngine::loadModel() {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
-
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
-        std::cout << "Loading model didn't work!";
-        return;
-    }
-
-    std::unordered_map<TinyPipeline::Vertex, uint32_t> uniqueVertices{};
-
-    for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            TinyPipeline::Vertex vertex{};
-            vertex.pos = {
-                attrib.vertices[3 * index.vertex_index + 0],
-                attrib.vertices[3 * index.vertex_index + 1],
-                attrib.vertices[3 * index.vertex_index + 2]
-            };
-
-            if (!attrib.normals.empty()) {
-                vertex.normal = {
-                    attrib.normals[3 * index.normal_index + 0],
-                    attrib.normals[3 * index.normal_index + 1],
-                    attrib.normals[3 * index.normal_index + 2]
-                };
-            }
-
-            if (!attrib.texcoords.empty())
-                vertex.texCoord = {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-            };
-
-            vertex.color = { 1.0f, 1.0f, 1.0f };
-
-            if (uniqueVertices.count(vertex) == 0) {
-                uniqueVertices[vertex] = static_cast<uint32_t>(modelVertices.size());
-                modelVertices.push_back(vertex);
-            }
-
-            modelIndices.push_back(uniqueVertices[vertex]);
-        }
-    }
 }
 
 void TinyEngine::loadModelAssimp() {
@@ -325,6 +281,8 @@ void TinyEngine::cleanup() {
     swapChain.cleanup(tinyDevice);
 
     tinyTexture.cleanup(tinyDevice);
+    glassTexture.cleanup(tinyDevice);
+    pinkTexture.cleanup(tinyDevice);
 
     tinyBuffer.cleanupUniformBuffers(tinyDevice);
 
