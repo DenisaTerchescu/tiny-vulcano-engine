@@ -48,10 +48,9 @@ void TinyEngine::initVulkan() {
     swapChain.init(tinyDevice, window.getWindow(), depth);
     pipeline.init(tinyDevice, swapChain);
     command.createCommandPool(tinyDevice);
-    depth.createDepthResources(tinyDevice, command, swapChain, tinyTexture);
+    depth.createDepthResources(tinyDevice, command, swapChain, veryPinkTexture);
     swapChain.createFramebuffers(tinyDevice, depth);
-    tinyTexture.init(tinyDevice, command, tinyBuffer, PINK_TEXTURE_PATH);
-    glassTexture.init(tinyDevice, command, tinyBuffer, GLASS_TEXTURE_PATH);
+    veryPinkTexture.init(tinyDevice, command, tinyBuffer, PINK_TEXTURE_PATH);
     pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
     floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
     loadModelAssimp();
@@ -61,8 +60,8 @@ void TinyEngine::initVulkan() {
     tinyBuffer.createIndexBuffer(tinyDevice, command, modelIndices, tinyBuffer.modelIndexBuffer, tinyBuffer.modelIndexBufferMemory);
     tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
-    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { tinyTexture.textureImageView, pinkTexture.textureImageView, tinyTexture.textureImageView, floorTexture.textureImageView },
-        { tinyTexture.textureSampler, pinkTexture.textureSampler, tinyTexture.textureSampler, floorTexture.textureSampler });
+    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { veryPinkTexture.textureImageView, pinkTexture.textureImageView, veryPinkTexture.textureImageView, floorTexture.textureImageView },
+        { veryPinkTexture.textureSampler, pinkTexture.textureSampler, veryPinkTexture.textureSampler, floorTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);
     tinySync.createSyncObjects(tinyDevice);
@@ -280,9 +279,9 @@ void TinyEngine::cleanup() {
 
     swapChain.cleanup(tinyDevice);
 
-    tinyTexture.cleanup(tinyDevice);
-    glassTexture.cleanup(tinyDevice);
     pinkTexture.cleanup(tinyDevice);
+    floorTexture.cleanup(tinyDevice);    
+    veryPinkTexture.cleanup(tinyDevice);
 
     tinyBuffer.cleanupUniformBuffers(tinyDevice);
 
@@ -403,7 +402,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
         0, 1, &tinyBuffer.descriptorSets[2][currentFrame], 0, nullptr);
     glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(1,0,0));
-    sphereModel = glm::scale(sphereModel2, glm::vec3(0.5f, 0.5f, 0.5f));
+    sphereModel2 = glm::scale(sphereModel2, glm::vec3(0.5f, 0.5f, 0.5f));
     updateUniformBuffer(2, currentFrame, sphereModel2);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
 

@@ -39,7 +39,7 @@
 
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const std::string MODEL_PATH = RESOURCES_PATH "models/barrel.obj";
+const std::string MODEL_PATH = RESOURCES_PATH "models/ball.obj";
 
 const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
 const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
@@ -252,11 +252,9 @@ public:
 
     TinyDepth depth;
 
-    TinyTexture tinyTexture;
-
-    TinyTexture glassTexture;
-    TinyTexture pinkTexture;
-    TinyTexture floorTexture;
+	TinyTexture pinkTexture;
+	TinyTexture floorTexture;
+    TinyTexture veryPinkTexture;
 
     Camera camera;
    
