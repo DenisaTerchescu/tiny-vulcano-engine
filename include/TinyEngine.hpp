@@ -41,6 +41,10 @@
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = RESOURCES_PATH "models/barrel.obj";
 
+const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
+//const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
+//const std::string WOOD_TEXTURE_PATH = RESOURCES_PATH "textures/wood.jpg";
+
 template<> struct hash<TinyPipeline::Vertex> {
     size_t operator()(TinyPipeline::Vertex const& vertex) const {
         return ((hash<glm::vec3>()(vertex.pos) ^
@@ -247,7 +251,7 @@ public:
 
     TinyDepth depth;
 
-    TinyTexture texture;
+    TinyTexture tinyTexture;
     Camera camera;
    
     uint32_t currentFrame = 0;
@@ -273,7 +277,7 @@ public:
 
     void gameUpdate(float deltaTime, TinyWindow& window, TinyInput& input);
 
-    void updateUniformBuffer(uint32_t objectIndex, uint32_t currentImage, const glm::mat4& modelMatrix, bool useTexture = false);
+    void updateUniformBuffer(uint32_t objectIndex, uint32_t currentImage, const glm::mat4& modelMatrix);
 
     void lookAround(float deltaTime, float xPos, float yPos);
 

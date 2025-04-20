@@ -8,6 +8,7 @@ void TinyTexture::init(TinyDevice& device, TinyCommand& command, TinyBuffer& tin
     createTextureImageView(device);
     createTextureSampler(device);
 }
+
 void TinyTexture::createTextureImage(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer,
     const std::string& texturePath) {
     int texWidth, texHeight, texChannels;

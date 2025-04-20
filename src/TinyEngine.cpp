@@ -48,9 +48,9 @@ void TinyEngine::initVulkan() {
     swapChain.init(tinyDevice, window.getWindow(), depth);
     pipeline.init(tinyDevice, swapChain);
     command.createCommandPool(tinyDevice);
-    depth.createDepthResources(tinyDevice, command, swapChain, texture);
+    depth.createDepthResources(tinyDevice, command, swapChain, tinyTexture);
     swapChain.createFramebuffers(tinyDevice, depth);
-    texture.init(tinyDevice, command, tinyBuffer, GLASS_TEXTURE_PATH);
+    tinyTexture.init(tinyDevice, command, tinyBuffer, GLASS_TEXTURE_PATH);
     loadModelAssimp();
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices,tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
@@ -58,7 +58,7 @@ void TinyEngine::initVulkan() {
     tinyBuffer.createIndexBuffer(tinyDevice, command, modelIndices, tinyBuffer.modelIndexBuffer, tinyBuffer.modelIndexBufferMemory);
     tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
-    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, texture.textureImageView, texture.textureSampler);
+    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, tinyTexture.textureImageView, tinyTexture.textureSampler);
 
     command.createCommandBuffers(tinyDevice);
     tinySync.createSyncObjects(tinyDevice);
@@ -324,7 +324,7 @@ void TinyEngine::cleanup() {
 
     swapChain.cleanup(tinyDevice);
 
-    texture.cleanup(tinyDevice);
+    tinyTexture.cleanup(tinyDevice);
 
     tinyBuffer.cleanupUniformBuffers(tinyDevice);
 
@@ -403,7 +403,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
         &tinyBuffer.descriptorSets[0][currentFrame], 0, nullptr);
     glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y, glassContainer.z));
     cubeModel = glm::scale(cubeModel, glm::vec3(0.8f, 0.8f, 0.8f));
-    updateUniformBuffer(0, currentFrame, cubeModel, true);
+    updateUniformBuffer(0, currentFrame, cubeModel);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 
@@ -436,7 +436,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
         0, 1, &tinyBuffer.descriptorSets[1][currentFrame], 0, nullptr);
     glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), spherePosition);
     sphereModel = glm::scale(sphereModel, glm::vec3(1.2f, 1.2f, 1.2f));
-    updateUniformBuffer(1,currentFrame, sphereModel, true);
+    updateUniformBuffer(1,currentFrame, sphereModel);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
 
     // Drawing the third object
@@ -446,7 +446,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
         0, 1, &tinyBuffer.descriptorSets[2][currentFrame], 0, nullptr);
     glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(1,0,0));
     sphereModel = glm::scale(sphereModel2, glm::vec3(0.5f, 0.5f, 0.5f));
-    updateUniformBuffer(2, currentFrame, sphereModel2, false);
+    updateUniformBuffer(2, currentFrame, sphereModel2);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
 
     // Drawing the scene stage/plane
@@ -456,7 +456,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
         0, 1, &tinyBuffer.descriptorSets[3][currentFrame], 0, nullptr);
     glm::mat4 sceneStage = glm::translate(glm::mat4(1.0f), spherePosition - glm::vec3(0, 0.75, 0));
     sceneStage = glm::scale(sceneStage, glm::vec3(20.0f, 10.5f, 20.5f));
-    updateUniformBuffer(3, currentFrame, sceneStage, false);
+    updateUniformBuffer(3, currentFrame, sceneStage);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(planeIndices.size()), 1, 0, 0, 0);
 
 
@@ -557,8 +557,7 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& inpu
 
 
 }
-void TinyEngine::updateUniformBuffer(uint32_t objectIndex, uint32_t currentImage,
-    const glm::mat4& modelMatrix, bool useTexture) {
+void TinyEngine::updateUniformBuffer(uint32_t objectIndex, uint32_t currentImage, const glm::mat4& modelMatrix) {
 
     static auto startTime = std::chrono::high_resolution_clock::now();
 
