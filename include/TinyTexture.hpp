@@ -7,7 +7,9 @@
 #include "TinyBuffer.hpp"
 #include "TinyCommand.hpp"
 
-const std::string TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
+const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
+//const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
+//const std::string WOOD_TEXTURE_PATH = RESOURCES_PATH "textures/wood.jpg";
 
 class TinyTexture{
 public:
