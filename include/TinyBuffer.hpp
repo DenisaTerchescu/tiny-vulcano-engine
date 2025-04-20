@@ -40,11 +40,6 @@ public:
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
 
-    VkBuffer modelVertexBuffer;
-    VkDeviceMemory modelVertexBufferMemory;
-    VkBuffer modelIndexBuffer;
-    VkDeviceMemory modelIndexBufferMemory;
-
     VkBuffer planeVertexBuffer;
     VkDeviceMemory planeVertexBufferMemory;
     VkBuffer planeIndexBuffer;

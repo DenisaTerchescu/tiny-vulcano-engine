@@ -3,13 +3,13 @@
 void TinyBuffer::cleanup(TinyDevice& device) {
     vkDestroyBuffer(device.getDevice(), vertexBuffer, nullptr);
     vkFreeMemory(device.getDevice(), vertexBufferMemory, nullptr);
-    vkDestroyBuffer(device.getDevice(), modelVertexBuffer, nullptr);
-    vkFreeMemory(device.getDevice(), modelVertexBufferMemory, nullptr);
+    //vkDestroyBuffer(device.getDevice(), modelVertexBuffer, nullptr);
+    //vkFreeMemory(device.getDevice(), modelVertexBufferMemory, nullptr);
     vkDestroyBuffer(device.getDevice(), planeVertexBuffer, nullptr);
     vkFreeMemory(device.getDevice(), planeVertexBufferMemory, nullptr);
     vkDestroyBuffer(device.getDevice(), indexBuffer, nullptr);
-    vkDestroyBuffer(device.getDevice(), modelIndexBuffer, nullptr);
-    vkFreeMemory(device.getDevice(), modelIndexBufferMemory, nullptr);
+    //vkDestroyBuffer(device.getDevice(), modelIndexBuffer, nullptr);
+    //vkFreeMemory(device.getDevice(), modelIndexBufferMemory, nullptr);
     vkDestroyBuffer(device.getDevice(), planeIndexBuffer, nullptr);
     vkFreeMemory(device.getDevice(), planeIndexBufferMemory, nullptr);
 

@@ -54,10 +54,13 @@ void TinyEngine::initVulkan() {
     pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
     floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
     loadModelAssimp(BALL_MODEL_PATH);
+    loadModelAssimp(PINGUIN_MODEL_PATH);
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices,tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
-    tinyBuffer.createVertexBuffer(tinyDevice, command, modelVertices, tinyBuffer.modelVertexBuffer, tinyBuffer.modelVertexBufferMemory);
-    tinyBuffer.createIndexBuffer(tinyDevice, command, modelIndices, tinyBuffer.modelIndexBuffer, tinyBuffer.modelIndexBufferMemory);
+    for (TinyModel& model : models) {
+        tinyBuffer.createVertexBuffer(tinyDevice, command, model.vertices, model.modelVertexBuffer, model.modelVertexBufferMemory);
+        tinyBuffer.createIndexBuffer(tinyDevice, command, model.indices, model.modelIndexBuffer, model.modelIndexBufferMemory);
+    }
     tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
     tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { veryPinkTexture.textureImageView, pinkTexture.textureImageView, veryPinkTexture.textureImageView, floorTexture.textureImageView },
@@ -151,67 +154,67 @@ void TinyEngine::loadModelAssimp(const std::string modelPath) {
         return;
     }
 
+    TinyModel model;
     std::unordered_map<TinyPipeline::Vertex, uint32_t> uniqueVertices{};
-    processNode(scene->mRootNode, scene, uniqueVertices);
+    processNode(scene->mRootNode, scene, uniqueVertices, model.vertices, model.indices);
+
+
+    models.push_back(std::move(model));
 }
 
+
 void TinyEngine::processNode(aiNode* node, const aiScene* scene,
-    std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices) {
+    std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices,
+    std::vector<TinyPipeline::Vertex>& vertices,
+    std::vector<uint32_t>& indices) {
+
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        processMesh(mesh, scene, uniqueVertices);
+        processMesh(mesh, scene, uniqueVertices, vertices, indices);
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++) {
-        processNode(node->mChildren[i], scene, uniqueVertices);
+        processNode(node->mChildren[i], scene, uniqueVertices, vertices, indices);
     }
 }
 
 void TinyEngine::processMesh(aiMesh* mesh, const aiScene* scene,
-    std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices) {
+    std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices,
+    std::vector<TinyPipeline::Vertex>& vertices,
+    std::vector<uint32_t>& indices) {
+
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
         TinyPipeline::Vertex vertex{};
 
-        // Position
-        vertex.pos = {
-            mesh->mVertices[i].x,
-            mesh->mVertices[i].y,
-            mesh->mVertices[i].z
-        };
+        vertex.pos = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 
-        // Normals
         if (mesh->HasNormals()) {
-            vertex.normal = {
-                mesh->mNormals[i].x,
-                mesh->mNormals[i].y,
-                mesh->mNormals[i].z
-            };
+            vertex.normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
         }
 
-        // TexCoords (only the first set)
         if (mesh->mTextureCoords[0]) {
             vertex.texCoord = {
                 mesh->mTextureCoords[0][i].x,
-                1.0f - mesh->mTextureCoords[0][i].y // Flip V
+                1.0f - mesh->mTextureCoords[0][i].y
             };
         }
 
-        vertex.color = { 1.0f, 1.0f, 1.0f }; // default color
+        vertex.color = { 1.0f, 1.0f, 1.0f };
 
         if (uniqueVertices.count(vertex) == 0) {
-            uniqueVertices[vertex] = static_cast<uint32_t>(modelVertices.size());
-            modelVertices.push_back(vertex);
+            uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+            vertices.push_back(vertex);
         }
     }
 
-    // Indices
     for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
         aiFace face = mesh->mFaces[i];
         for (unsigned int j = 0; j < face.mNumIndices; j++) {
-            modelIndices.push_back(uniqueVertices[modelVertices[face.mIndices[j]]]);
+            indices.push_back(uniqueVertices[vertices[face.mIndices[j]]]);
         }
     }
 }
+
 
 
 void TinyEngine::drawFrame() {
@@ -364,47 +367,25 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 
-    // Drawing the second cube
-    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
-    //glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0, 0));
-    //cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.8f, 0.8f, 0.8f));
-    //updateUniformBuffer2(currentFrame, cubeModel2, true);
-    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-    //secondCubeShown = true;
-
-
-        // Drawing the second sphere model
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
-    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
-    //glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), spherePosition2);
-    //sphereModel2 = glm::scale(sphereModel2, glm::vec3(1.2f, 1.2f, 1.2f));
-    //updateUniformBuffer(currentFrame, sphereModel2, true);
-    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
-    //secondSphereShown = true;
-
-    // Drawing the sphere model
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    // Drawing the penguin model
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
         0, 1, &tinyBuffer.descriptorSets[1][currentFrame], 0, nullptr);
     glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), spherePosition);
     sphereModel = glm::scale(sphereModel, glm::vec3(1.2f, 1.2f, 1.2f));
     updateUniformBuffer(1,currentFrame, sphereModel);
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
 
     // Drawing the third object
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[0].modelVertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, models[0].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
         0, 1, &tinyBuffer.descriptorSets[2][currentFrame], 0, nullptr);
     glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(1,0,0));
     sphereModel2 = glm::scale(sphereModel2, glm::vec3(0.5f, 0.5f, 0.5f));
     updateUniformBuffer(2, currentFrame, sphereModel2);
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[0].indices.size()), 1, 0, 0, 0);
 
     // Drawing the scene stage/plane
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.planeVertexBuffer, offsets);

@@ -40,6 +40,7 @@
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string BALL_MODEL_PATH = RESOURCES_PATH "models/ball.obj";
+const std::string PINGUIN_MODEL_PATH = RESOURCES_PATH "models/pinguin.glb";
 
 const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
 const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
@@ -79,6 +80,16 @@ class TinyEngine {
 	struct Sphere {
 		glm::vec3 center;
 		float radius;
+	};
+
+	struct TinyModel {
+		std::vector<TinyPipeline::Vertex> vertices;
+		std::vector<uint32_t> indices;
+
+		VkBuffer modelVertexBuffer;
+		VkDeviceMemory modelVertexBufferMemory;
+		VkBuffer modelIndexBuffer;
+		VkDeviceMemory modelIndexBufferMemory;
 	};
 
 
@@ -243,8 +254,7 @@ public:
     TinyPipeline pipeline;
     TinyCommand command;
 
-	std::vector<TinyPipeline::Vertex> modelVertices;
-	std::vector<uint32_t> modelIndices;
+	std::vector<TinyModel> models;
 
     TinySync tinySync;
 
@@ -260,6 +270,7 @@ public:
    
     uint32_t currentFrame = 0;
 
+
     void initVulkan();
 
     void mainLoop();
@@ -269,10 +280,14 @@ public:
 	void loadModelAssimp(const std::string modelPath);
 
 	void processNode(aiNode* node, const aiScene* scene,
-		std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices);
+		std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices,
+		std::vector<TinyPipeline::Vertex>& vertices,
+		std::vector<uint32_t>& indices);
 
 	void processMesh(aiMesh* mesh, const aiScene* scene,
-		std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices);
+		std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices,
+		std::vector<TinyPipeline::Vertex>& vertices,
+		std::vector<uint32_t>& indices);
 
     void cleanup();
 
