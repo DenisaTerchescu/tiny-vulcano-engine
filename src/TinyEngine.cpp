@@ -364,7 +364,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     renderPassInfo.pClearValues = &clearColor;*/
 
     std::array<VkClearValue, 2> clearValues{};
-    VkClearColorValue clearColor = { { 0.05f, 0.05f, 0.05f, 1.0f} };
+    VkClearColorValue clearColor = { { 0.72f, 0.53f, 0.56f, 1.0f } };
     clearValues[0].color = clearColor;
     clearValues[1].depthStencil = { 1.0f, 0 };
 
