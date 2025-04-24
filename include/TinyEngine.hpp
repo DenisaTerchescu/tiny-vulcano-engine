@@ -59,7 +59,7 @@ template<> struct hash<TinyPipeline::Vertex> {
 
 class TinyEngine {
 
-	glm::vec3 glassContainer = { 1.25f,0,0 };
+	glm::vec3 glassContainer = { 2.5f,0,0 };
 	glm::vec3 spherePosition = glm::vec3(-1.5f, 0, 0);
 	glm::vec3 spherePosition2 = glm::vec3(1.25f, 0, 0);
 	glm::vec3 secondCube = glm::vec3(3.0f, 0, 0);

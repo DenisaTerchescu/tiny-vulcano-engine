@@ -54,7 +54,7 @@ public:
     VkDescriptorPool descriptorPool;
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
-    size_t objectCount = 6;
+    size_t objectCount = 9;
 };
 
 
