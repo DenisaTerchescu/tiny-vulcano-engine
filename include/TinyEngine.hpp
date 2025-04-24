@@ -46,6 +46,7 @@ const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
 const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
 const std::string CUTE_PINK_TEXTURE_PATH = RESOURCES_PATH "textures/cute_pink.jpg";
 const std::string FLOOR_TEXTURE_PATH = RESOURCES_PATH "textures/pink_stone.png";
+const std::string PURPLE_TEXTURE_PATH = RESOURCES_PATH "textures/green_marble.jpg";
 
 template<> struct hash<TinyPipeline::Vertex> {
     size_t operator()(TinyPipeline::Vertex const& vertex) const {
@@ -265,6 +266,7 @@ public:
 	TinyTexture pinkTexture;
 	TinyTexture floorTexture;
     TinyTexture veryPinkTexture;
+    TinyTexture purpleTexture;
 
     Camera camera;
    

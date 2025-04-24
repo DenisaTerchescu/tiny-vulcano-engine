@@ -5,8 +5,8 @@
 #include <string>
 #include <TinyInput.hpp>
 
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
+const uint32_t WIDTH = 1400; // 800
+const uint32_t HEIGHT = 1050; //600
 
 class TinyEngine;
 

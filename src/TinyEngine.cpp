@@ -52,6 +52,7 @@ void TinyEngine::initVulkan() {
     swapChain.createFramebuffers(tinyDevice, depth);
     veryPinkTexture.init(tinyDevice, command, tinyBuffer, PINK_TEXTURE_PATH);
     pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
+    purpleTexture.init(tinyDevice, command, tinyBuffer, PURPLE_TEXTURE_PATH);
     floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
     loadModelAssimp(BALL_MODEL_PATH);
     loadModelAssimp(PINGUIN_MODEL_PATH);
@@ -63,8 +64,8 @@ void TinyEngine::initVulkan() {
     }
     tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
-    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { veryPinkTexture.textureImageView, pinkTexture.textureImageView, veryPinkTexture.textureImageView, floorTexture.textureImageView },
-        { veryPinkTexture.textureSampler, pinkTexture.textureSampler, veryPinkTexture.textureSampler, floorTexture.textureSampler });
+    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { veryPinkTexture.textureImageView, pinkTexture.textureImageView, pinkTexture.textureImageView, veryPinkTexture.textureImageView, purpleTexture.textureImageView, floorTexture.textureImageView },
+        { veryPinkTexture.textureSampler, pinkTexture.textureSampler, pinkTexture.textureSampler, veryPinkTexture.textureSampler, purpleTexture.textureSampler, floorTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);
     tinySync.createSyncObjects(tinyDevice);
@@ -285,6 +286,7 @@ void TinyEngine::cleanup() {
     pinkTexture.cleanup(tinyDevice);
     floorTexture.cleanup(tinyDevice);    
     veryPinkTexture.cleanup(tinyDevice);
+    purpleTexture.cleanup(tinyDevice);
 
     tinyBuffer.cleanupUniformBuffers(tinyDevice);
 
@@ -367,34 +369,56 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 
+    // Drawing the second cube
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1,
+        &tinyBuffer.descriptorSets[1][currentFrame], 0, nullptr);
+    glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y + 1.3, glassContainer.z));
+    cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.5f, 0.5f, 0.5f));
+    updateUniformBuffer(1, currentFrame, cubeModel2);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+
+
     // Drawing the penguin model
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
-        0, 1, &tinyBuffer.descriptorSets[1][currentFrame], 0, nullptr);
-    glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), spherePosition);
-    sphereModel = glm::scale(sphereModel, glm::vec3(1.2f, 1.2f, 1.2f));
-    updateUniformBuffer(1,currentFrame, sphereModel);
+        0, 1, &tinyBuffer.descriptorSets[2][currentFrame], 0, nullptr);
+    glm::mat4 penguinModel = glm::translate(glm::mat4(1.0f), spherePosition - glm::vec3(0,0.5f, 0));
+    penguinModel = glm::scale(penguinModel, glm::vec3(1.2f, 1.2f, 1.2f));
+    updateUniformBuffer(2,currentFrame, penguinModel);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
 
     // Drawing the third object
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[0].modelVertexBuffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, models[0].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
-        0, 1, &tinyBuffer.descriptorSets[2][currentFrame], 0, nullptr);
+        0, 1, &tinyBuffer.descriptorSets[3][currentFrame], 0, nullptr);
     glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(1,0,0));
     sphereModel2 = glm::scale(sphereModel2, glm::vec3(0.5f, 0.5f, 0.5f));
-    updateUniformBuffer(2, currentFrame, sphereModel2);
+    updateUniformBuffer(3, currentFrame, sphereModel2);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[0].indices.size()), 1, 0, 0, 0);
+
+
+    // Drawing the second penguin model
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
+        0, 1, &tinyBuffer.descriptorSets[4][currentFrame], 0, nullptr);
+    glm::mat4 penguinModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(-1, -0.5f,0));
+    penguinModel2 = glm::scale(penguinModel2, glm::vec3(1.2f, 1.2f, 1.2f));
+    updateUniformBuffer(4, currentFrame, penguinModel2);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
 
     // Drawing the scene stage/plane
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.planeVertexBuffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.planeIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
-        0, 1, &tinyBuffer.descriptorSets[3][currentFrame], 0, nullptr);
+        0, 1, &tinyBuffer.descriptorSets[5][currentFrame], 0, nullptr);
     glm::mat4 sceneStage = glm::translate(glm::mat4(1.0f), spherePosition - glm::vec3(0, 0.75, 0));
     sceneStage = glm::scale(sceneStage, glm::vec3(20.0f, 10.5f, 20.5f));
-    updateUniformBuffer(3, currentFrame, sceneStage);
+    updateUniformBuffer(5, currentFrame, sceneStage);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(planeIndices.size()), 1, 0, 0, 0);
 
 
