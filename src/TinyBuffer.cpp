@@ -179,8 +179,8 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = textureImageViews[obj];
-            imageInfo.sampler = textureSamplers[obj];
+            imageInfo.imageView = textureImageViews[0];
+            imageInfo.sampler = textureSamplers[0];
 
             std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
