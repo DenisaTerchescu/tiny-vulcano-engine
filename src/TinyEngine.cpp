@@ -15,10 +15,28 @@
 #include <assimp/postprocess.h>
 
 bool TinyEngine::CheckCollisionSphere(const Sphere& sphere1, const Sphere& sphere2) {
-    float dist = glm::distance(sphere1.center, sphere2.center);
+    glm::vec3 direction = sphere2.center - sphere1.center;
+
+    // Project onto XZ plane by ignoring Y
+    direction.y = 0.0f;
+
+    float dist = glm::length(direction);
     float radiusSum = sphere1.radius + sphere2.radius;
-    return dist < radiusSum;
+
+    if (dist < radiusSum && dist > 0.0001f) { // avoid divide-by-zero
+        glm::vec3 normal = glm::normalize(direction);
+        float penetration = radiusSum - dist;
+
+        // Move only on the XZ plane
+        ballPosition += normal * penetration;
+
+        return true;
+    }
+
+    return false;
 }
+
+
 
 bool TinyEngine::CheckCollisionAABB(const Cube& cube1, const Cube& cube2) {
     if (cube1.max.x < cube2.min.x || cube1.min.x > cube2.max.x) return false;
@@ -64,8 +82,8 @@ void TinyEngine::initVulkan() {
     }
     tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
-    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { veryPinkTexture.textureImageView, pinkTexture.textureImageView, pinkTexture.textureImageView, veryPinkTexture.textureImageView, pinkTexture.textureImageView, pinkTexture.textureImageView, veryPinkTexture.textureImageView, purpleTexture.textureImageView, floorTexture.textureImageView },
-        { veryPinkTexture.textureSampler, pinkTexture.textureSampler, pinkTexture.textureSampler, veryPinkTexture.textureSampler, pinkTexture.textureSampler, pinkTexture.textureSampler, veryPinkTexture.textureSampler, purpleTexture.textureSampler, floorTexture.textureSampler });
+    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { veryPinkTexture.textureImageView, pinkTexture.textureImageView, pinkTexture.textureImageView, veryPinkTexture.textureImageView, pinkTexture.textureImageView, pinkTexture.textureImageView, veryPinkTexture.textureImageView, purpleTexture.textureImageView, floorTexture.textureImageView, purpleTexture.textureImageView },
+        { veryPinkTexture.textureSampler, pinkTexture.textureSampler, pinkTexture.textureSampler, veryPinkTexture.textureSampler, pinkTexture.textureSampler, pinkTexture.textureSampler, veryPinkTexture.textureSampler, purpleTexture.textureSampler, floorTexture.textureSampler, purpleTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);
     tinySync.createSyncObjects(tinyDevice);
@@ -87,37 +105,20 @@ void TinyEngine::mainLoop() {
             window.input.mousePos = { x,y };
         }
 
-        Cube cube1 = { glm::vec3(-0.8f, -0.8f, -0.8f) + glassContainer, glm::vec3(0.8f, 0.8f, 0.8f) + glassContainer};
-        Cube cube2 = { glm::vec3(-0.8f, -0.8f, -0.8f) + secondCube, glm::vec3(0.8f, 0.8f, 0.8f) + secondCube};
-        Sphere sphere1 = { spherePosition, 0.5f};
-        Sphere sphere2 = { spherePosition2, 0.5f};
+        Cube cube1 = { glm::vec3(-0.8f, -0.8f, -0.8f) + glassContainer, glm::vec3(0.8f, 0.8f, 0.8f) + glassContainer };
+        Cube cube2 = { glm::vec3(-0.8f, -0.8f, -0.8f) + secondCube, glm::vec3(0.8f, 0.8f, 0.8f) + secondCube };
+        Sphere sphere1 = { penguinPosition, 0.5f };
+        Sphere sphere2 = { ballPosition, 0.5f };
 
-        if (secondCubeShown) {
-            if (CheckCollisionAABB(cube1, cube2)) {
-                collisionDetectedText = "Collision detected!";
-            }
-            else {
-                collisionDetectedText = "No collision!!";
-            }
-        }
-        else if (secondSphereShown) {
-            if (CheckCollisionSphere(sphere1, sphere2)) {
-                collisionDetectedText = "Collision detected!";
-            }
-            else {
-                collisionDetectedText = "No collision!!";
-            }
+        if (CheckCollisionSphere(sphere1, sphere2)) {
+            collisionDetectedText = "Collision detected!";
         }
         else {
-            if (CheckCollisionAABBSphere(cube1, sphere1)) {
-                collisionDetectedText = "Collision detected!";
-            }
-            else {
-                collisionDetectedText = "No collision!!";
-            }
+            collisionDetectedText = "No collision!!";
         }
 
-        
+
+
         auto start = std::chrono::high_resolution_clock::now();
 
         float deltaTime = (std::chrono::duration_cast<std::chrono::nanoseconds>(start - stop)).count() / 1000000000.0;
@@ -125,7 +126,7 @@ void TinyEngine::mainLoop() {
 
         float optimizedDeltaTime = deltaTime;
         if (optimizedDeltaTime > 1.f / 10) { optimizedDeltaTime = 1.f / 10; } // bugfix
-        if (optimizedDeltaTime < 0) { optimizedDeltaTime = 0; } 
+        if (optimizedDeltaTime < 0) { optimizedDeltaTime = 0; }
 
         drawUI();
 
@@ -414,7 +415,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
         0, 1, &tinyBuffer.descriptorSets[5][currentFrame], 0, nullptr);
-    glm::mat4 penguinModel = glm::translate(glm::mat4(1.0f), spherePosition - glm::vec3(0,0.5f, 0));
+    glm::mat4 penguinModel = glm::translate(glm::mat4(1.0f), penguinPosition);
     penguinModel = glm::scale(penguinModel, glm::vec3(1.2f, 1.2f, 1.2f));
     updateUniformBuffer(5,currentFrame, penguinModel);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
@@ -424,7 +425,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     vkCmdBindIndexBuffer(commandBuffer, models[0].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
         0, 1, &tinyBuffer.descriptorSets[6][currentFrame], 0, nullptr);
-    glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), spherePosition - glm::vec3(0.25,0,1));
+    glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), ballPosition);
     sphereModel2 = glm::scale(sphereModel2, glm::vec3(0.3f, 0.3f, 0.3f));
     updateUniformBuffer(6, currentFrame, sphereModel2);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[0].indices.size()), 1, 0, 0, 0);
@@ -438,6 +439,16 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     glm::mat4 penguinModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(-1, -0.5f,0));
     penguinModel2 = glm::scale(penguinModel2, glm::vec3(1.2f, 1.2f, 1.2f));
     updateUniformBuffer(7, currentFrame, penguinModel2);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
+
+    // Drawing the third penguin model
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
+        0, 1, &tinyBuffer.descriptorSets[9][currentFrame], 0, nullptr);
+    glm::mat4 penguinModel3 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(-0.5f, -0.5f, 0.5f));
+    penguinModel3 = glm::scale(penguinModel3, glm::vec3(1.2f, 1.2f, 1.2f));
+    updateUniformBuffer(9, currentFrame, penguinModel3);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
 
     // Drawing the scene stage/plane
@@ -523,19 +534,19 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& inpu
     }
 
     if (input.keyBoard[TinyButton::Up].held) {
-        glassContainer.z += moveSpeed;
+        penguinPosition.z += moveSpeed;
     }
 
     if (input.keyBoard[TinyButton::Down].held) {
-        glassContainer.z -= moveSpeed;
+        penguinPosition.z -= moveSpeed;
     }
 
     if (input.keyBoard[TinyButton::Left].held) {
-        glassContainer.x += moveSpeed;
+        penguinPosition.x += moveSpeed;
     }
 
     if (input.keyBoard[TinyButton::Right].held) {
-        glassContainer.x -= moveSpeed;
+        penguinPosition.x -= moveSpeed;
     }
 
     if (input.rightMouse.held) {
@@ -560,13 +571,13 @@ void TinyEngine::updateUniformBuffer(uint32_t objectIndex, uint32_t currentImage
 
     glm::vec3 pos(0, 1, -2);
 
-    ubo.view = glm::lookAt({ camera.pos },
+    ubo.view = glm::lookAt({ camera.pos},
         glm::vec3(camera.pos) + camera.cameraFront,
         glm::vec3(0.0f, 1.0f, 0.0f));
 
     ubo.viewPos = glm::vec3(camera.pos);
 
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 50.0f);
 
     ubo.proj[1][1] *= -1;
 
@@ -640,21 +651,23 @@ void TinyEngine::drawUI()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("TinyVulcanoEngine");
+    ImGui::Begin("Penguin football game");
 
     ImGui::Text("%.2f FPS", fps);
+    ImGui::Spacing();
+    ImGui::Text("Score counter: %.2f", scoreCounter);
     ImGui::Spacing();
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), collisionDetectedText.c_str());
     ImGui::Spacing();
 
-    ImGui::DragFloat3("Sphere position", &spherePosition[0], 0.1f);
-    ImGui::DragFloat3("Cube position", &glassContainer[0], 0.1f);
+    //ImGui::DragFloat3("Sphere position", &spherePosition[0], 0.1f);
+    //ImGui::DragFloat3("Cube position", &glassContainer[0], 0.1f);
 
-    ImGui::Spacing();
-    ImGui::Spacing();
+    //ImGui::Spacing();
+    //ImGui::Spacing();
     ImGui::Text("WASDEQ - Move camera");
     ImGui::Text("Right click - Look around");
-    ImGui::Text("Arrows - Move the cube");
+    ImGui::Text("Arrows - Move the penguin");
     ImGui::End();
 
     ImGui::Render();

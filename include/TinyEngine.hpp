@@ -61,10 +61,13 @@ class TinyEngine {
 
 	glm::vec3 glassContainer = { 2.5f,0,0 };
 	glm::vec3 spherePosition = glm::vec3(-1.5f, 0, 0);
+	glm::vec3 penguinPosition = glm::vec3(-1.5f, 0, 0) - glm::vec3(0, 0.5f, 0);
+	glm::vec3 ballPosition = glm::vec3(-1.5f, 0, 0) - glm::vec3(0.25, 0, 1);
 	glm::vec3 spherePosition2 = glm::vec3(1.25f, 0, 0);
 	glm::vec3 secondCube = glm::vec3(3.0f, 0, 0);
 	bool secondCubeShown = false;
 	bool secondSphereShown = false;
+	int scoreCounter = 0;
 
 	struct Camera {
 		float yaw = 90.0f;
@@ -72,6 +75,7 @@ class TinyEngine {
 		glm::vec3 pos = { 0, 0.5f, -6 };
 		glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
 	};
+
 
 	struct Cube {
 		glm::vec3 min;
