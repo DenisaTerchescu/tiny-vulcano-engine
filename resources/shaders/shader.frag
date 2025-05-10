@@ -90,7 +90,7 @@ vec3 ACESFitted(vec3 color)
 void main() {
    // outColor = texture(texSampler, fragTexCoord);
 
-vec3 lightPos = vec3(1.0, 2.0, 1.0); 
+vec3 lightPos = vec3(1.0, 5.0, 1.0); 
 vec3 lightDir = normalize(lightPos - fragPosition); 
 vec3 lightColor = vec3(1.0, 0.75, 0.8)*3; 
 vec3 objectColor = vec3(0.0, 1.0, 0.0);
@@ -105,11 +105,17 @@ vec3 ambientColor = vec3(0.1, 0.1, 0.1);
 float diff = max(dot(fragNormal, lightDir), 0.0);
 vec3 diffuseLighting = diff * lightColor;
 
+
+
 // specular light
 float specularStrength = 10.0;
 vec3 viewDir = normalize(ubo.viewPos - fragPosition);
-vec3 reflectDir = reflect(-lightDir, fragNormal); 
-float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64);
+// vec3 reflectDir = reflect(-lightDir, fragNormal); // Phong
+
+vec3 halfwayDir = normalize(lightDir + viewDir); // Blinn-Phong
+float spec = pow(max(dot(fragNormal, halfwayDir), 0.0), 64.0);
+
+//float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64);
 if (diff <= 0) { spec = 0;}
 vec3 specular = specularStrength * spec * lightColor;  
 
