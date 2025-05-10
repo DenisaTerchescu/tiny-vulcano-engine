@@ -17,18 +17,16 @@
 bool TinyEngine::CheckCollisionSphere(const Sphere& sphere1, const Sphere& sphere2) {
     glm::vec3 direction = sphere2.center - sphere1.center;
 
-    // Project onto XZ plane by ignoring Y
     direction.y = 0.0f;
 
     float dist = glm::length(direction);
     float radiusSum = sphere1.radius + sphere2.radius;
 
-    if (dist < radiusSum && dist > 0.0001f) { // avoid divide-by-zero
+    if (dist < radiusSum && dist > 0.0001f) { 
         glm::vec3 normal = glm::normalize(direction);
-        float penetration = radiusSum - dist;
+        float overlap = radiusSum - dist;
 
-        // Move only on the XZ plane
-        ballPosition += normal * penetration;
+        ballPosition += normal * overlap;
 
         return true;
     }
