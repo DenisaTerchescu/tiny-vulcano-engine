@@ -59,8 +59,10 @@ template<> struct hash<TinyPipeline::Vertex> {
 
 class TinyEngine {
 
-	glm::vec3 glassContainer = { 2.5f,0,0 };
+	glm::vec3 glassContainer = { 2.5f,0,4.5f };
 	glm::vec3 spherePosition = glm::vec3(-1.5f, 0, 0);
+	glm::vec3 penguinPosition2 = spherePosition + glm::vec3(-1, -0.5f, 0);
+	glm::vec3 penguinPosition3 = glm::vec3(1.2f, -0.5f, 3.5f);
 	glm::vec3 penguinPosition = glm::vec3(-1.5f, 0, 0) - glm::vec3(0, 0.5f, 0);
 	glm::vec3 ballPosition = glm::vec3(-1.5f, 0, 0) - glm::vec3(0.25, 0, 1);
 	glm::vec3 spherePosition2 = glm::vec3(1.25f, 0, 0);
@@ -248,6 +250,7 @@ class TinyEngine {
 	float fpsUpdateInterval = 1.0f;
 	float timeAccumulator = 0.0f;
 	string collisionDetectedText = "";
+	float deltaTime = 0.0f;
 
 public:
     void run();

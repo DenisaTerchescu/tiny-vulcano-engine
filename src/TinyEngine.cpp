@@ -94,6 +94,7 @@ void TinyEngine::mainLoop() {
     auto stop = std::chrono::high_resolution_clock::now();
     auto previousTime = std::chrono::high_resolution_clock::now();
 
+
     while (!glfwWindowShouldClose(window.getWindow())) {
 
         glfwPollEvents();
@@ -121,11 +122,14 @@ void TinyEngine::mainLoop() {
 
         auto start = std::chrono::high_resolution_clock::now();
 
-        float deltaTime = (std::chrono::duration_cast<std::chrono::nanoseconds>(start - stop)).count() / 1000000000.0;
+         deltaTime = (std::chrono::duration_cast<std::chrono::nanoseconds>(start - stop)).count() / 1000000000.0;
+        float accumulatedTime = (std::chrono::duration_cast<std::chrono::seconds>(stop - previousTime)).count();
         stop = std::chrono::high_resolution_clock::now();
 
         float optimizedDeltaTime = deltaTime;
-        if (optimizedDeltaTime > 1.f / 10) { optimizedDeltaTime = 1.f / 10; } // bugfix
+
+  
+        if (optimizedDeltaTime > 1.f / 10) { optimizedDeltaTime = 1.f / 10; } 
         if (optimizedDeltaTime < 0) { optimizedDeltaTime = 0; }
 
         drawUI();
@@ -436,20 +440,25 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
         0, 1, &tinyBuffer.descriptorSets[7][currentFrame], 0, nullptr);
-    glm::mat4 penguinModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(-1, -0.5f,0));
+    glm::mat4 penguinModel2 = glm::translate(glm::mat4(1.0f), penguinPosition2);
     penguinModel2 = glm::scale(penguinModel2, glm::vec3(1.2f, 1.2f, 1.2f));
     updateUniformBuffer(7, currentFrame, penguinModel2);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
+
 
     // Drawing the third penguin model
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
         0, 1, &tinyBuffer.descriptorSets[9][currentFrame], 0, nullptr);
-    glm::mat4 penguinModel3 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(-0.5f, -0.5f, 0.5f));
+    glm::mat4 penguinModel3 = glm::translate(glm::mat4(1.0f), penguinPosition3);
     penguinModel3 = glm::scale(penguinModel3, glm::vec3(1.2f, 1.2f, 1.2f));
+       
+    //penguinPosition3.x = std::sin(deltaTime * 0.3f) * 0.5f;
     updateUniformBuffer(9, currentFrame, penguinModel3);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
+
+    
 
     // Drawing the scene stage/plane
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.planeVertexBuffer, offsets);
@@ -561,10 +570,6 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& inpu
 }
 void TinyEngine::updateUniformBuffer(uint32_t objectIndex, uint32_t currentImage, const glm::mat4& modelMatrix) {
 
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     TinyBuffer::UniformBufferObject ubo{};
     ubo.model = modelMatrix;
@@ -577,7 +582,7 @@ void TinyEngine::updateUniformBuffer(uint32_t objectIndex, uint32_t currentImage
 
     ubo.viewPos = glm::vec3(camera.pos);
 
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 50.0f);
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 500.0f);
 
     ubo.proj[1][1] *= -1;
 
