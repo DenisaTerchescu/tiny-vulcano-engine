@@ -109,10 +109,6 @@ void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline,
     const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers) {
     VkDeviceSize bufferSize = this->objectCount * sizeof(UniformBufferObject);
 
-    uniformBuffers.resize(this->objectCount);
-    uniformBuffersMemory.resize(this->objectCount);
-    uniformBuffersMapped.resize(this->objectCount);
-
 
         uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
         uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
