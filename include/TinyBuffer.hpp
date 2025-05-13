@@ -45,11 +45,12 @@ public:
     VkBuffer planeIndexBuffer;
     VkDeviceMemory planeIndexBufferMemory;
 
-    std::vector<std::vector<VkBuffer>> uniformBuffers;         // [object][frame]
-    std::vector<std::vector<VkDeviceMemory>> uniformBuffersMemory;
-    std::vector<std::vector<void*>> uniformBuffersMapped;
+    std::vector<VkBuffer> uniformBuffers;         // [frame]
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<void*> uniformBuffersMapped;
 
-    std::vector<std::vector<VkDescriptorSet>> descriptorSets; // [object][frame]
+
+    std::vector<VkDescriptorSet> descriptorSets; // [object][frame]
 
     VkDescriptorPool descriptorPool;
 

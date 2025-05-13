@@ -16,11 +16,10 @@ void TinyBuffer::cleanup(TinyDevice& device) {
 }
 
 void TinyBuffer::cleanupUniformBuffers(TinyDevice& device) {
-    for (size_t obj = 0; obj < objectCount; obj++) {
         for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++) {
-            vkDestroyBuffer(device.getDevice(), uniformBuffers[obj][frame], nullptr);
-            vkFreeMemory(device.getDevice(), uniformBuffersMemory[obj][frame], nullptr);
-        }
+            vkDestroyBuffer(device.getDevice(), uniformBuffers[frame], nullptr);
+            vkFreeMemory(device.getDevice(), uniformBuffersMemory[frame], nullptr);
+        
     }
 
     vkDestroyDescriptorPool(device.getDevice(), descriptorPool, nullptr);
@@ -115,18 +114,17 @@ void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline,
     uniformBuffersMapped.resize(this->objectCount);
 
 
-    for (size_t obj = 0; obj < objectCount; obj++) {
-        uniformBuffers[obj].resize(MAX_FRAMES_IN_FLIGHT);
-        uniformBuffersMemory[obj].resize(MAX_FRAMES_IN_FLIGHT);
-        uniformBuffersMapped[obj].resize(MAX_FRAMES_IN_FLIGHT);
+        uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+        uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+        uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
         for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++) {
             createBuffer(device, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                uniformBuffers[obj][frame], uniformBuffersMemory[obj][frame]);
+                uniformBuffers[frame], uniformBuffersMemory[frame]);
 
-            vkMapMemory(device.getDevice(), uniformBuffersMemory[obj][frame], 0, bufferSize, 0, &uniformBuffersMapped[obj][frame]);
+            vkMapMemory(device.getDevice(), uniformBuffersMemory[frame], 0, bufferSize, 0, &uniformBuffersMapped[frame]);
         }
-    }
+    
 
 
     createDescriptorPool(device);
@@ -158,8 +156,7 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
 
     descriptorSets.resize(objectCount);
 
-    for (size_t obj = 0; obj < objectCount; obj++) {
-        descriptorSets[obj].resize(MAX_FRAMES_IN_FLIGHT);
+        descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
 
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -167,13 +164,13 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
         allocInfo.descriptorSetCount = MAX_FRAMES_IN_FLIGHT;
         allocInfo.pSetLayouts = layouts.data();
 
-        if (vkAllocateDescriptorSets(device.getDevice(), &allocInfo, descriptorSets[obj].data()) != VK_SUCCESS) {
+        if (vkAllocateDescriptorSets(device.getDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate descriptor sets!");
         }
 
         for (size_t frame = 0; frame < MAX_FRAMES_IN_FLIGHT; frame++) {
             VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = uniformBuffers[obj][frame];
+            bufferInfo.buffer = uniformBuffers[frame];
             bufferInfo.offset = 0;
             bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -185,7 +182,7 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
             std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = descriptorSets[obj][frame];
+            descriptorWrites[0].dstSet = descriptorSets[frame];
             descriptorWrites[0].dstBinding = 0;
             descriptorWrites[0].dstArrayElement = 0;
             descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -193,7 +190,7 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
             descriptorWrites[0].pBufferInfo = &bufferInfo;
 
             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[1].dstSet = descriptorSets[obj][frame];
+            descriptorWrites[1].dstSet = descriptorSets[frame];
             descriptorWrites[1].dstBinding = 1;
             descriptorWrites[1].dstArrayElement = 0;
             descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -201,7 +198,7 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
             descriptorWrites[1].pImageInfo = &imageInfo;
 
             vkUpdateDescriptorSets(device.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-        }
+        
     }
 }
 

@@ -472,21 +472,22 @@ vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offset
 vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 TinyBuffer::UniformBufferObject ubo = updateUniformBuffer();
-for (int i = 0; i < 4095; ++i) {
-    // Compute unique position per penguin (e.g., grid layout)
+//for (int i = 0; i < 4095; ++i) {
+//    // Compute unique position per penguin (e.g., grid layout)
+int i = 0;
     float x = (i % 50) * 0.2f;              // 50 columns
     float z = (i / 50) * 0.2f;              // 20 rows
 
     // Drawing the second penguin model
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
-        0, 1, &tinyBuffer.descriptorSets[i][currentFrame], 0, nullptr);
+        0, 1, &tinyBuffer.descriptorSets[currentFrame], 0, nullptr);
     glm::mat4 penguinModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(x, -0.5f, z));
     penguinModel2 = glm::scale(penguinModel2, glm::vec3(1.2f, 1.2f, 1.2f));
     ubo.model = penguinModel2;
-    memcpy(tinyBuffer.uniformBuffersMapped[i][currentFrame], &ubo, sizeof(ubo));
+    memcpy(tinyBuffer.uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
-}
+//}
 
 
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
