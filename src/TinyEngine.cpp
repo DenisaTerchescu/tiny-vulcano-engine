@@ -678,7 +678,7 @@ void TinyEngine::drawUI()
     ImGui::Spacing();
     ImGui::Text("WASDEQ - Move camera");
     ImGui::Text("Right click - Look around");
-    ImGui::Text("Arrows - Move the cube");
+    ImGui::Text("Arrows - Move the penguin");
     ImGui::End();
 
     ImGui::Render();
