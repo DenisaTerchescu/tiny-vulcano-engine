@@ -452,42 +452,25 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(planeIndices.size()), 1, 0, 0, 0);
 
 
-    //for (int i = 0; i < 2000; ++i) {
-    //    // Compute unique position per penguin (e.g., grid layout)
-    //    float x = (i % 50) * 0.2f;              // 50 columns
-    //    float z = (i / 50) * 0.2f;              // 20 rows
-
-    //    // Drawing the second penguin model
-    //    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
-    //    vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-    //    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
-    //        0, 1, &tinyBuffer.descriptorSets[i][currentFrame], 0, nullptr);
-    //    glm::mat4 penguinModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(x, -0.5f, z));
-    //    penguinModel2 = glm::scale(penguinModel2, glm::vec3(1.2f, 1.2f, 1.2f));
-    //    updateUniformBuffer(i, currentFrame, penguinModel2);
-    //    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
-    //}
-
 vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
 vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 TinyBuffer::UniformBufferObject ubo = updateUniformBuffer();
-//for (int i = 0; i < 4095; ++i) {
-//    // Compute unique position per penguin (e.g., grid layout)
-int i = 0;
-    float x = (i % 50) * 0.2f;              // 50 columns
-    float z = (i / 50) * 0.2f;              // 20 rows
 
-    // Drawing the second penguin model
+    for (int i = 0; i < OBJECT_INSTANCES; ++i) {
+    float x = (i % 50) * 2.5f;              // 50 columns
+    float z = (i / 50) * 2.5f;              // 20 rows
 
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
-        0, 1, &tinyBuffer.descriptorSets[currentFrame], 0, nullptr);
+    uint32_t dynamicOffset = i * static_cast<uint32_t>(tinyBuffer.dynamicAlignment);
+    
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSets[currentFrame], 1, &dynamicOffset);
     glm::mat4 penguinModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(x, -0.5f, z));
     penguinModel2 = glm::scale(penguinModel2, glm::vec3(1.2f, 1.2f, 1.2f));
     ubo.model = penguinModel2;
-    memcpy(tinyBuffer.uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
+    //memcpy(tinyBuffer.uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
+    memcpy(static_cast<char*>(tinyBuffer.uniformBuffersMapped[currentFrame]) + dynamicOffset, &ubo, sizeof(ubo));
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
-//}
+}
 
 
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
@@ -682,13 +665,14 @@ void TinyEngine::drawUI()
 
     ImGui::Begin("TinyVulcanoEngine");
 
+    ImGui::Text("Number of objects: %d", OBJECT_INSTANCES);
     ImGui::Text("%.2f FPS", fps);
-    ImGui::Spacing();
-    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), collisionDetectedText.c_str());
-    ImGui::Spacing();
+    //ImGui::Spacing();
+    //ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), collisionDetectedText.c_str());
+    //ImGui::Spacing();
 
-    ImGui::DragFloat3("Sphere position", &spherePosition[0], 0.1f);
-    ImGui::DragFloat3("Cube position", &glassContainer[0], 0.1f);
+    //ImGui::DragFloat3("Sphere position", &spherePosition[0], 0.1f);
+    //ImGui::DragFloat3("Cube position", &glassContainer[0], 0.1f);
 
     ImGui::Spacing();
     ImGui::Spacing();

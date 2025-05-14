@@ -107,8 +107,20 @@ void TinyBuffer::copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer s
 
 void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline, 
     const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers) {
-    VkDeviceSize bufferSize = this->objectCount * sizeof(UniformBufferObject);
+    //VkDeviceSize bufferSize = this->objectCount * sizeof(UniformBufferObject);
 
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &deviceProperties);
+
+    minUboAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment;
+
+    dynamicAlignment = sizeof(UniformBufferObject);
+
+    if (minUboAlignment > 0) {
+        dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    }
+
+    bufferSize = OBJECT_INSTANCES * dynamicAlignment;
 
         uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
         uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
@@ -130,16 +142,16 @@ void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline,
 
 void TinyBuffer::createDescriptorPool(TinyDevice& device) {
     std::array<VkDescriptorPoolSize, 2> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(objectCount * MAX_FRAMES_IN_FLIGHT);
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(objectCount * MAX_FRAMES_IN_FLIGHT);
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(objectCount * MAX_FRAMES_IN_FLIGHT);
+    poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
     if (vkCreateDescriptorPool(device.getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor pool!");
@@ -149,8 +161,6 @@ void TinyBuffer::createDescriptorPool(TinyDevice& device) {
 void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, 
     const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers) {
     std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, pipeline.descriptorSetLayout);
-
-    descriptorSets.resize(objectCount);
 
         descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
 
@@ -181,7 +191,7 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
             descriptorWrites[0].dstSet = descriptorSets[frame];
             descriptorWrites[0].dstBinding = 0;
             descriptorWrites[0].dstArrayElement = 0;
-            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
             descriptorWrites[0].descriptorCount = 1;
             descriptorWrites[0].pBufferInfo = &bufferInfo;
 
