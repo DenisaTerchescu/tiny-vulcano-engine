@@ -9,13 +9,17 @@
 #include "TinyDevice.hpp"
 #include "TinyCommand.hpp"
 
+
+const int OBJECT_INSTANCES = 50095;
+
 class TinyBuffer {
 public:
-    struct UniformBufferObject {
+    struct alignas(16) UniformBufferObject {
         glm::mat4 model;
         glm::mat4 view;
         glm::mat4 proj;
         glm::vec3 viewPos;
+        float pad;
     };
 
     void cleanup(TinyDevice& device);
@@ -55,7 +59,10 @@ public:
     VkDescriptorPool descriptorPool;
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
-    size_t objectCount = 4095;
+    size_t minUboAlignment;
+    size_t dynamicAlignment;
+    size_t bufferSize;
+
 };
 
 
