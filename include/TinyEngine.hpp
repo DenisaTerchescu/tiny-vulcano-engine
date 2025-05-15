@@ -272,6 +272,8 @@ public:
    
     uint32_t currentFrame = 0;
 
+	float loadingTime = 0.0f;
+
 
     void initVulkan();
 

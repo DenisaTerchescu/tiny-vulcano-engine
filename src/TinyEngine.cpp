@@ -451,6 +451,7 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     //updateUniformBuffer(7, currentFrame, sceneStage);
     //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(planeIndices.size()), 1, 0, 0, 0);
 
+    auto startLoadingTime = std::chrono::high_resolution_clock::now();
 
 vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
 vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
@@ -471,6 +472,11 @@ TinyBuffer::UniformBufferObject ubo = updateUniformBuffer();
     memcpy(static_cast<char*>(tinyBuffer.uniformBuffersMapped[currentFrame]) + dynamicOffset, &ubo, sizeof(ubo));
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
 }
+
+    auto endLoadingTime = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double, std::milli> elapsedTime = endLoadingTime - startLoadingTime;
+    loadingTime = elapsedTime.count();
 
 
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
@@ -667,6 +673,7 @@ void TinyEngine::drawUI()
 
     ImGui::Text("Number of objects: %d", OBJECT_INSTANCES);
     ImGui::Text("%.2f FPS", fps);
+    ImGui::Text("Loading time: %.2f ms", loadingTime);
     //ImGui::Spacing();
     //ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), collisionDetectedText.c_str());
     //ImGui::Spacing();
