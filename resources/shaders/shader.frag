@@ -160,7 +160,7 @@ float roughness = 0.1;
 
 vec3 finalColor = PBR( N,  V,  L, texColor.rgb, lightColor,
 	 roughness, metallic);
-outColor = vec4(ACESFitted(finalColor * 0.7), texColor.a); 
+outColor = vec4(ACESFitted(finalColor * 0.3), texColor.a); 
 outColor.rgb = pow(outColor.rgb, vec3(1/2.2)); 
 
 }
