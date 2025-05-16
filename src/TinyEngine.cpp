@@ -49,13 +49,13 @@ void TinyEngine::initVulkan() {
     swapChain.init(tinyDevice, window.getWindow(), depth);
     pipeline.init(tinyDevice, swapChain);
     command.createCommandPool(tinyDevice);
-    depth.createDepthResources(tinyDevice, command, swapChain, veryPinkTexture);
+    depth.createDepthResources(tinyDevice, command, swapChain, pbrDiffuseTexture);
     swapChain.createFramebuffers(tinyDevice, depth);
-    veryPinkTexture.init(tinyDevice, command, tinyBuffer, PBR_DIFFUSE_TEXTURE_PATH);
-    pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
-    purpleTexture.init(tinyDevice, command, tinyBuffer, PURPLE_TEXTURE_PATH);
-    floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
-    textureMap.init(tinyDevice, command, tinyBuffer, PBR_TEXTURE_PATH);
+    pbrDiffuseTexture.init(tinyDevice, command, tinyBuffer, PBR_DIFFUSE_TEXTURE_PATH);
+    //pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
+    //purpleTexture.init(tinyDevice, command, tinyBuffer, PURPLE_TEXTURE_PATH);
+    //floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
+    roughnessTexture.init(tinyDevice, command, tinyBuffer, PBR_TEXTURE_PATH);
     loadModelAssimp(BALL_MODEL_PATH);
     loadModelAssimp(PINGUIN_MODEL_PATH);
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
@@ -66,10 +66,10 @@ void TinyEngine::initVulkan() {
     }
     tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
-    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { veryPinkTexture.textureImageView},
-        { veryPinkTexture.textureSampler }, 
-        { textureMap.textureImageView },
-        { veryPinkTexture.textureSampler });
+    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { pbrDiffuseTexture.textureImageView},
+        { pbrDiffuseTexture.textureSampler }, 
+        { roughnessTexture.textureImageView },
+        { roughnessTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);
     tinySync.createSyncObjects(tinyDevice);
@@ -289,7 +289,7 @@ void TinyEngine::cleanup() {
 
     pinkTexture.cleanup(tinyDevice);
     floorTexture.cleanup(tinyDevice);    
-    veryPinkTexture.cleanup(tinyDevice);
+    pbrDiffuseTexture.cleanup(tinyDevice);
     purpleTexture.cleanup(tinyDevice);
 
     tinyBuffer.cleanupUniformBuffers(tinyDevice);

@@ -42,11 +42,11 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string BALL_MODEL_PATH = RESOURCES_PATH "models/ball.obj";
 const std::string PINGUIN_MODEL_PATH = RESOURCES_PATH "models/pinguin.glb";
 
-const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
-const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
-const std::string CUTE_PINK_TEXTURE_PATH = RESOURCES_PATH "textures/cute_pink.jpg";
-const std::string FLOOR_TEXTURE_PATH = RESOURCES_PATH "textures/pink_stone.png";
-const std::string PURPLE_TEXTURE_PATH = RESOURCES_PATH "textures/green_marble.jpg";
+//const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
+//const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
+//const std::string CUTE_PINK_TEXTURE_PATH = RESOURCES_PATH "textures/cute_pink.jpg";
+//const std::string FLOOR_TEXTURE_PATH = RESOURCES_PATH "textures/pink_stone.png";
+//const std::string PURPLE_TEXTURE_PATH = RESOURCES_PATH "textures/green_marble.jpg";
 const std::string PBR_TEXTURE_PATH = RESOURCES_PATH "textures/textureMap.jpg";
 const std::string PBR_DIFFUSE_TEXTURE_PATH = RESOURCES_PATH "textures/textMapDiffuse.jpg";
 
@@ -267,9 +267,9 @@ public:
 
 	TinyTexture pinkTexture;
 	TinyTexture floorTexture;
-    TinyTexture veryPinkTexture;
+    TinyTexture pbrDiffuseTexture;
     TinyTexture purpleTexture;
-    TinyTexture textureMap;
+    TinyTexture roughnessTexture;
 
     Camera camera;
    

@@ -17,7 +17,7 @@ public:
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 
-    void createDepthResources(TinyDevice& device, TinyCommand& command, TinySwapChain& swapChain, TinyTexture& veryPinkTexture);
+    void createDepthResources(TinyDevice& device, TinyCommand& command, TinySwapChain& swapChain, TinyTexture& pbrDiffuseTexture);
     VkFormat findSupportedFormat(TinyDevice& device, const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     
     VkFormat findDepthFormat(TinyDevice& device);
