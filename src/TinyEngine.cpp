@@ -66,6 +66,7 @@ void TinyEngine::initVulkan() {
     tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
     tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { veryPinkTexture.textureImageView},
+        { veryPinkTexture.textureSampler }, { veryPinkTexture.textureImageView },
         { veryPinkTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);

@@ -106,7 +106,8 @@ void TinyBuffer::copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer s
 }
 
 void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline, 
-    const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers) {
+    const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers,
+    const std::vector<VkImageView>& roughnessImageViews, const std::vector<VkSampler>& roughnessSamplers) {
     //VkDeviceSize bufferSize = this->objectCount * sizeof(UniformBufferObject);
 
     VkPhysicalDeviceProperties deviceProperties;
@@ -136,7 +137,9 @@ void TinyBuffer::createUniformBuffers(TinyDevice& device, TinyPipeline pipeline,
 
 
     createDescriptorPool(device);
-    createDescriptorSets(device, pipeline, textureImageViews, textureSamplers);
+    createDescriptorSets(device, pipeline, 
+        textureImageViews, textureSamplers,
+        roughnessImageViews, roughnessSamplers);
 
 }
 
@@ -146,6 +149,8 @@ void TinyBuffer::createDescriptorPool(TinyDevice& device) {
     poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -159,7 +164,8 @@ void TinyBuffer::createDescriptorPool(TinyDevice& device) {
 }
 
 void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, 
-    const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers) {
+    const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers,
+    const std::vector<VkImageView>& roughnessImageViews, const std::vector<VkSampler>& roughnessSamplers) {
     std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, pipeline.descriptorSetLayout);
 
         descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
@@ -185,7 +191,12 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
             imageInfo.imageView = textureImageViews[0];
             imageInfo.sampler = textureSamplers[0];
 
-            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+            VkDescriptorImageInfo roughnessInfo{};
+            roughnessInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            roughnessInfo.imageView = roughnessImageViews[0];
+            roughnessInfo.sampler = roughnessSamplers[0];
+
+            std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = descriptorSets[frame];
@@ -202,6 +213,13 @@ void TinyBuffer::createDescriptorSets(TinyDevice& device, TinyPipeline pipeline,
             descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             descriptorWrites[1].descriptorCount = 1;
             descriptorWrites[1].pImageInfo = &imageInfo;
+
+            descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[2].dstSet = descriptorSets[frame];
+            descriptorWrites[2].dstBinding = 2;
+            descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptorWrites[2].descriptorCount = 1;
+            descriptorWrites[2].pImageInfo = &roughnessInfo;
 
             vkUpdateDescriptorSets(device.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         
