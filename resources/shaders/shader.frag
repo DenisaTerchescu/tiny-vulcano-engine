@@ -158,7 +158,7 @@ vec3 N = normalize(fragNormal);
 
 vec3 mr = texture(roughnessMap, fragTexCoord).rgb;
     float metallic = mr.b;
-    float roughness = mr.g;
+    float roughness = max(mr.g, 0.01);
     float ao = mr.r;
 
 vec3 finalColor = PBR( N,  V,  L, texColor.rgb, lightColor,
