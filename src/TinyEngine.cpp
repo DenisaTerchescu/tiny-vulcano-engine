@@ -51,7 +51,7 @@ void TinyEngine::initVulkan() {
     command.createCommandPool(tinyDevice);
     depth.createDepthResources(tinyDevice, command, swapChain, veryPinkTexture);
     swapChain.createFramebuffers(tinyDevice, depth);
-    veryPinkTexture.init(tinyDevice, command, tinyBuffer, PINK_TEXTURE_PATH);
+    veryPinkTexture.init(tinyDevice, command, tinyBuffer, PBR_DIFFUSE_TEXTURE_PATH);
     pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
     purpleTexture.init(tinyDevice, command, tinyBuffer, PURPLE_TEXTURE_PATH);
     floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
@@ -456,8 +456,8 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 
     auto startLoadingTime = std::chrono::high_resolution_clock::now();
 
-vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
-vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[0].modelVertexBuffer, offsets);
+vkCmdBindIndexBuffer(commandBuffer, models[0].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 TinyBuffer::UniformBufferObject ubo = updateUniformBuffer();
 
@@ -473,7 +473,7 @@ TinyBuffer::UniformBufferObject ubo = updateUniformBuffer();
     ubo.model = penguinModel2;
     //memcpy(tinyBuffer.uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
     memcpy(static_cast<char*>(tinyBuffer.uniformBuffersMapped[currentFrame]) + dynamicOffset, &ubo, sizeof(ubo));
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[0].indices.size()), 1, 0, 0, 0);
 }
 
     auto endLoadingTime = std::chrono::high_resolution_clock::now();
