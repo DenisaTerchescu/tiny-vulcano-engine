@@ -156,9 +156,11 @@ objectColor = pow(objectColor, vec3(2.2));
 vec3 L = normalize(lightPos - fragPosition);  
 vec3 V = normalize(ubo.viewPos - fragPosition);  
 vec3 N = normalize(fragNormal);  
- 
-float metallic = 0.0;
-float roughness = 0.1;
+
+    vec2 mr = texture(roughnessMap, fragTexCoord).rg;
+    float metallic = mr.r;
+    float roughness = mr.g;
+
 
 vec3 finalColor = PBR( N,  V,  L, texColor.rgb, lightColor,
 	 roughness, metallic);

@@ -55,6 +55,7 @@ void TinyEngine::initVulkan() {
     pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
     purpleTexture.init(tinyDevice, command, tinyBuffer, PURPLE_TEXTURE_PATH);
     floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
+    textureMap.init(tinyDevice, command, tinyBuffer, PBR_TEXTURE_PATH);
     loadModelAssimp(BALL_MODEL_PATH);
     loadModelAssimp(PINGUIN_MODEL_PATH);
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
@@ -66,7 +67,8 @@ void TinyEngine::initVulkan() {
     tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
     tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { veryPinkTexture.textureImageView},
-        { veryPinkTexture.textureSampler }, { veryPinkTexture.textureImageView },
+        { veryPinkTexture.textureSampler }, 
+        { textureMap.textureImageView },
         { veryPinkTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);
