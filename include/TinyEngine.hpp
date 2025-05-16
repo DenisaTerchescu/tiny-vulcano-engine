@@ -265,10 +265,7 @@ public:
 
     TinyDepth depth;
 
-	TinyTexture pinkTexture;
-	TinyTexture floorTexture;
     TinyTexture pbrDiffuseTexture;
-    TinyTexture purpleTexture;
     TinyTexture roughnessTexture;
 
     Camera camera;

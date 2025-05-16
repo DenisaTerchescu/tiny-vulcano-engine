@@ -52,9 +52,6 @@ void TinyEngine::initVulkan() {
     depth.createDepthResources(tinyDevice, command, swapChain, pbrDiffuseTexture);
     swapChain.createFramebuffers(tinyDevice, depth);
     pbrDiffuseTexture.init(tinyDevice, command, tinyBuffer, PBR_DIFFUSE_TEXTURE_PATH);
-    //pinkTexture.init(tinyDevice, command, tinyBuffer, CUTE_PINK_TEXTURE_PATH);
-    //purpleTexture.init(tinyDevice, command, tinyBuffer, PURPLE_TEXTURE_PATH);
-    //floorTexture.init(tinyDevice, command, tinyBuffer, FLOOR_TEXTURE_PATH);
     roughnessTexture.init(tinyDevice, command, tinyBuffer, PBR_TEXTURE_PATH);
     loadModelAssimp(BALL_MODEL_PATH);
     loadModelAssimp(PINGUIN_MODEL_PATH);
@@ -287,10 +284,8 @@ void TinyEngine::cleanup() {
 
     swapChain.cleanup(tinyDevice);
 
-    pinkTexture.cleanup(tinyDevice);
-    floorTexture.cleanup(tinyDevice);    
     pbrDiffuseTexture.cleanup(tinyDevice);
-    purpleTexture.cleanup(tinyDevice);
+    roughnessTexture.cleanup(tinyDevice);
 
     tinyBuffer.cleanupUniformBuffers(tinyDevice);
 
