@@ -35,11 +35,13 @@ public:
 
     void createUniformBuffers(TinyDevice& device, TinyPipeline pipeline, 
         const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers,
-        const std::vector<VkImageView>& roughnessImageViews, const std::vector<VkSampler>& roughnessSamplers);
+        const std::vector<VkImageView>& roughnessImageViews, const std::vector<VkSampler>& roughnessSamplers,
+        const std::vector<VkImageView>& normalImageViews, const std::vector<VkSampler>& normalSamplers);
     void createDescriptorPool(TinyDevice& device);
     void createDescriptorSets(TinyDevice& device, TinyPipeline pipeline, 
         const std::vector<VkImageView>& textureImageViews, const std::vector<VkSampler>& textureSamplers,
-        const std::vector<VkImageView>& roughnessImageViews, const std::vector<VkSampler>& roughnessSamplers);
+        const std::vector<VkImageView>& roughnessImageViews, const std::vector<VkSampler>& roughnessSamplers,
+        const std::vector<VkImageView>& normalImageViews, const std::vector<VkSampler>& normalSamplers);
 
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;

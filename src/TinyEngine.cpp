@@ -66,6 +66,8 @@ void TinyEngine::initVulkan() {
     tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { pbrDiffuseTexture.textureImageView},
         { pbrDiffuseTexture.textureSampler }, 
         { roughnessTexture.textureImageView },
+        { roughnessTexture.textureSampler },
+        { roughnessTexture.textureImageView },
         { roughnessTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);

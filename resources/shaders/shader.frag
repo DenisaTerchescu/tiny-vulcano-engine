@@ -16,6 +16,8 @@ layout(binding = 1) uniform sampler2D texSampler;
 
 layout(binding = 2) uniform sampler2D roughnessMap;
 
+layout(binding = 3) uniform sampler2D normalMap;
+
 layout(location = 0) out vec4 outColor;
 
 vec3 Uncharted2Tonemap(vec3 x) {
@@ -160,11 +162,13 @@ vec3 mr = texture(roughnessMap, fragTexCoord).rgb;
     float roughness = max(mr.g, 0.01);
     float ao = mr.r;
 
+vec3 normal = texture(normalMap, fragTexCoord).rgb;
+
+
 vec3 finalColor = PBR( N,  V,  L, texColor.rgb, lightColor,
 	 roughness, metallic);
 finalColor += ao * 0.05 * texColor.rgb; 
 outColor = vec4(ACESFitted(finalColor * 1.2), texColor.a); 
 //outColor = texColor;
 outColor.rgb = pow(outColor.rgb, vec3(1/2.2));
-
 }
