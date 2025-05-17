@@ -53,6 +53,7 @@ void TinyEngine::initVulkan() {
     swapChain.createFramebuffers(tinyDevice, depth);
     pbrDiffuseTexture.init(tinyDevice, command, tinyBuffer, PBR_DIFFUSE_TEXTURE_PATH);
     roughnessTexture.init(tinyDevice, command, tinyBuffer, PBR_TEXTURE_PATH);
+    normalTexture.init(tinyDevice, command, tinyBuffer, NORMAL_TEXTURE_PATH);
     loadModelAssimp(BALL_MODEL_PATH);
     loadModelAssimp(PINGUIN_MODEL_PATH);
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
@@ -67,8 +68,8 @@ void TinyEngine::initVulkan() {
         { pbrDiffuseTexture.textureSampler }, 
         { roughnessTexture.textureImageView },
         { roughnessTexture.textureSampler },
-        { roughnessTexture.textureImageView },
-        { roughnessTexture.textureSampler });
+        { normalTexture.textureImageView },
+        { normalTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);
     tinySync.createSyncObjects(tinyDevice);
