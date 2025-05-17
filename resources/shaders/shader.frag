@@ -147,9 +147,9 @@ void main() {
 
 vec3 lightPos = vec3(1.0, 7.0, 1.0); 
 vec3 lightDir = normalize(lightPos - fragPosition); 
-vec3 lightColor = vec3(1.0); 
+vec3 lightColor = vec3(3.0); 
 vec4 texColor = texture(texSampler, fragTexCoord);
-//texColor.rgb = pow(texColor.rgb, vec3(2.2));
+texColor.rgb = pow(texColor.rgb, vec3(2.2));
 
 vec3 L = normalize(lightPos - fragPosition);  
 vec3 V = normalize(ubo.viewPos - fragPosition);  
@@ -162,8 +162,9 @@ vec3 mr = texture(roughnessMap, fragTexCoord).rgb;
 
 vec3 finalColor = PBR( N,  V,  L, texColor.rgb, lightColor,
 	 roughness, metallic);
-finalColor += ao * 0.02 * texColor.rgb; 
+finalColor += ao * 0.05 * texColor.rgb; 
 outColor = vec4(ACESFitted(finalColor * 1.2), texColor.a); 
+//outColor = texColor;
 outColor.rgb = pow(outColor.rgb, vec3(1/2.2));
 
 }
