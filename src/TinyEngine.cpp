@@ -599,6 +599,10 @@ TinyBuffer::UniformBufferObject TinyEngine::updateUniformBuffer() {
 
     ubo.proj[1][1] *= -1;
 
+    ubo.lightColor = glm::vec3(3.0);
+
+    ubo.lightPos = glm::vec3(1, 7, 1);
+
 
     return ubo;
 

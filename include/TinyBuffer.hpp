@@ -20,6 +20,12 @@ public:
         glm::mat4 proj;
         glm::vec3 viewPos;
         float pad;
+
+        glm::vec3 lightPos;
+        float pad2;
+
+        glm::vec3 lightColor;
+        float pad3;
     };
 
     void cleanup(TinyDevice& device);

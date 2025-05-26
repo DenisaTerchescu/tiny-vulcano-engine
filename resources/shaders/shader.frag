@@ -10,6 +10,14 @@ layout(binding = 0) uniform UniformBufferObject {
     mat4 view;
     mat4 proj;
     vec3 viewPos;
+
+    float padding1;    
+
+    vec3 lightPos;     
+    float padding2;    
+
+    vec3 lightColor;   
+    float padding3;   
 } ubo;
 
 layout(binding = 1) uniform sampler2D texSampler;
@@ -158,10 +166,9 @@ mat3x3 TangentSpace(in vec3 normal)
 
 void main() {
  
-
-vec3 lightPos = vec3(1.0, 7.0, 1.0); 
+vec3 lightPos = ubo.lightPos; 
 vec3 lightDir = normalize(lightPos - fragPosition); 
-vec3 lightColor = vec3(3.0); 
+vec3 lightColor = ubo.lightColor; 
 vec4 texColor = texture(texSampler, fragTexCoord);
 texColor.rgb = pow(texColor.rgb, vec3(2.2));
 
