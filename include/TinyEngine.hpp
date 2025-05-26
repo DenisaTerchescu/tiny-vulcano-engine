@@ -276,6 +276,9 @@ public:
 
 	float loadingTime = 0.0f;
 
+	glm::vec3 lightPos = glm::vec3(1,7,1);
+	glm::vec3 lightColor = glm::vec3(3);
+
 
     void initVulkan();
 

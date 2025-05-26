@@ -599,9 +599,9 @@ TinyBuffer::UniformBufferObject TinyEngine::updateUniformBuffer() {
 
     ubo.proj[1][1] *= -1;
 
-    ubo.lightColor = glm::vec3(3.0);
+    ubo.lightColor = lightColor;
 
-    ubo.lightPos = glm::vec3(1, 7, 1);
+    ubo.lightPos = lightPos;
 
 
     return ubo;
@@ -681,10 +681,10 @@ void TinyEngine::drawUI()
     ImGui::Text("Loading time: %.2f ms", loadingTime);
     //ImGui::Spacing();
     //ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), collisionDetectedText.c_str());
-    //ImGui::Spacing();
+    ImGui::Spacing();
 
-    //ImGui::DragFloat3("Sphere position", &spherePosition[0], 0.1f);
-    //ImGui::DragFloat3("Cube position", &glassContainer[0], 0.1f);
+    ImGui::DragFloat3("Light position", &lightPos[0], 0.2f);
+    ImGui::DragFloat3("Light color", &lightColor[0], 0.2f);
 
     ImGui::Spacing();
    // ImGui::Spacing();
