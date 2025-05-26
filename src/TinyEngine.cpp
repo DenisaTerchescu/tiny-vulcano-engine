@@ -683,10 +683,10 @@ void TinyEngine::drawUI()
     //ImGui::DragFloat3("Cube position", &glassContainer[0], 0.1f);
 
     ImGui::Spacing();
-    ImGui::Spacing();
+   // ImGui::Spacing();
     ImGui::Text("WASDEQ - Move camera");
     ImGui::Text("Right click - Look around");
-    ImGui::Text("Arrows - Move the penguin");
+    //ImGui::Text("Arrows - Move the penguin");
     ImGui::End();
 
     ImGui::Render();

@@ -145,18 +145,14 @@ vec3 PBR(vec3 N, vec3 V, vec3 L, vec3 albedo, vec3 lightColor,
 
 
 //https://gamedev.stackexchange.com/questions/22204/from-normal-to-rotation-matrix#:~:text=Therefore%2C%20if%20you%20want%20to,the%20first%20and%20second%20columns.
-mat3x3 NormalToRotation(in vec3 normal)
+mat3x3 TangentSpace(in vec3 normal)
 {
-	// Find a vector in the plane
-	vec3 tangent0 = cross(normal, vec3(1, 0, 0));
-	if (dot(tangent0, tangent0) < 0.001)
-		tangent0 = cross(normal, vec3(0, 1, 0));
-	tangent0 = normalize(tangent0);
-	// Find another vector in the plane
-	vec3 tangent1 = normalize(cross(normal, tangent0));
-	// Construct a 3x3 matrix by storing three vectors in the columns of the matrix
-	return mat3x3(tangent0,tangent1,normal);
-	//return ColumnVectorsToMatrix(tangent0, tangent1, normal);
+	vec3 tangent = cross(normal, vec3(1, 0, 0));
+	if (dot(tangent, tangent) < 0.001)
+		tangent = cross(normal, vec3(0, 1, 0));
+	tangent = normalize(tangent);
+	vec3 bitangent = normalize(cross(normal, tangent));
+	return mat3x3(tangent,bitangent,normal);
 }
 
 
@@ -173,12 +169,8 @@ vec3 L = normalize(lightPos - fragPosition);
 vec3 V = normalize(ubo.viewPos - fragPosition);  
 vec3 N = normalize(fragNormal);  
 
-vec3 normal = texture(normalMap, fragTexCoord).rgb;
-normal = normalize(2*normal - 1.f);
-mat3 rotMat = NormalToRotation(fragNormal);
-normal = rotMat * normal;
-normal = normalize(normal);
-N = normal; //enable normal map
+vec3 normal = normalize(2 * texture(normalMap, fragTexCoord).rgb - 1.f);
+N = normalize(TangentSpace(fragNormal) * normal);
 
 
 vec3 mr = texture(roughnessMap, fragTexCoord).rgb;
@@ -192,7 +184,7 @@ vec3 finalColor = PBR( N,  V,  L, texColor.rgb, lightColor,
 	 roughness, metallic);
 finalColor += ao * 0.05 * texColor.rgb; 
 outColor = vec4(ACESFitted(finalColor * 1.2), texColor.a); 
-//outColor = texColor;
+
 outColor.rgb = pow(outColor.rgb, vec3(1/2.2));
-//outColor = vec4(normal,1);
+
 }
