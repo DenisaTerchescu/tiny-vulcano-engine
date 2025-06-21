@@ -74,6 +74,9 @@ class TinyEngine {
 		float pitch = 0.0f;
 		glm::vec3 pos = { 0, 0.5f, -6 };
 		glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
+		glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 Right;
+		glm::vec3 WorldUp;
 	};
 
 	struct Cube {

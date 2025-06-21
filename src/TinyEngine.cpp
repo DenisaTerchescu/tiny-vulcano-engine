@@ -507,20 +507,21 @@ void TinyEngine::lookAround(float deltaTime, float xPos, float yPos) {
 
     camera.yaw += 3 * deltaTime  * xPos;
     camera.pitch += 3 * deltaTime  * yPos; 
-
-    if (camera.yaw > 360) {
-        camera.yaw -= 360;
-    }
-
-    if (camera.yaw < -360) {
-        camera.yaw += 360;
-    }
+    
+    if (camera.pitch > 89.0f)
+        camera.pitch = 89.0f;
+    if (camera.pitch < -89.0f)
+        camera.pitch = -89.0f;
 
     glm::vec3 front;
     front.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
     front.y = sin(glm::radians(camera.pitch));
     front.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+
     camera.cameraFront = glm::normalize(front);
+
+    camera.Right = glm::normalize(glm::cross(camera.cameraFront, camera.Up));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+    camera.Up = glm::normalize(glm::cross(camera.Right, camera.cameraFront));
 
 }
 void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& input)
@@ -591,7 +592,7 @@ TinyBuffer::UniformBufferObject TinyEngine::updateUniformBuffer() {
 
     ubo.view = glm::lookAt({ camera.pos },
         glm::vec3(camera.pos) + camera.cameraFront,
-        glm::vec3(0.0f, 1.0f, 0.0f));
+        camera.Up);
 
     ubo.viewPos = glm::vec3(camera.pos);
 
@@ -687,10 +688,9 @@ void TinyEngine::drawUI()
     ImGui::DragFloat3("Light color", &lightColor[0], 0.2f);
 
     ImGui::Spacing();
-   // ImGui::Spacing();
     ImGui::Text("WASDEQ - Move camera");
     ImGui::Text("Right click - Look around");
-    //ImGui::Text("Arrows - Move the penguin");
+
     ImGui::End();
 
     ImGui::Render();
