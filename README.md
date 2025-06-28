@@ -5,14 +5,14 @@ My very own graphics engine built in C++ using the Vulkan API just to prove Vulk
 ![Engine Screenshot](resources/images/showcase.PNG)
 
 ## Core functionalities
-* Model loading support via assimp
-* Collision detection
-* Texture support
-* Camera & input system
-* ImGUI interface
-* Dynamic buffering
-* PBR lighting model integration
-* Normal mapping
+- [x] Model loading support via assimp
+- [x]  Collision detection
+- [x] Texture support
+- [x] Camera & input system
+- [x] ImGUI interface
+- [x] PBR lighting model integration
+- [x] Normal mapping
+- [ ] Shadow mapping (to be continued)
 
 ## Showcase GIF
 <p align="center">
