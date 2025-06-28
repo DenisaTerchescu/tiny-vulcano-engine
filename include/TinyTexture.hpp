@@ -7,10 +7,9 @@
 #include "TinyBuffer.hpp"
 #include "TinyCommand.hpp"
 
-
 class TinyTexture{
 public:
-    void init(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer);
+    void init(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer, const std::string& texturePath);
     void cleanup(TinyDevice& device);
 
     uint32_t mipLevels;
@@ -20,9 +19,7 @@ public:
     VkImageView textureImageView;
     VkSampler textureSampler;
 
-    const std::string TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
-
-    void createTextureImage(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer);
+    void createTextureImage(TinyDevice& device, TinyCommand& command, TinyBuffer& tinyBuffer, const std::string& texturePath);
     void copyBuffer(TinyDevice& device, TinyCommand& command, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void transitionImageLayout(TinyDevice& device, TinyCommand& command, VkImage image, VkFormat format, VkImageLayout oldLayout,
         VkImageLayout newLayout, uint32_t mipLevels);

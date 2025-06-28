@@ -10,19 +10,28 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include "../thirdparty/imgui-docking/imgui/backends/imgui_impl_vulkan.h"
 
-
-bool TinyEngine::CheckCollision(const Cube& cube, const Sphere& spherePosition) {
-    glm::vec3 closestPoint = glm::clamp(spherePosition.center, cube.min, cube.max);
-    float distance = glm::distance(spherePosition.center, closestPoint);
-    return distance < spherePosition.radius;
+bool TinyEngine::CheckCollisionSphere(const Sphere& sphere1, const Sphere& sphere2) {
+    float dist = glm::distance(sphere1.center, sphere2.center);
+    float radiusSum = sphere1.radius + sphere2.radius;
+    return dist < radiusSum;
 }
 
 bool TinyEngine::CheckCollisionAABB(const Cube& cube1, const Cube& cube2) {
-    if (cube1.max.x < cube2.min.x || cube1.min.x > cube2.max.x) return false; 
-    if (cube1.max.y < cube2.min.y || cube1.min.y > cube2.max.y) return false; 
-    if (cube1.max.z < cube2.min.z || cube1.min.z > cube2.max.z) return false; 
+    if (cube1.max.x < cube2.min.x || cube1.min.x > cube2.max.x) return false;
+    if (cube1.max.y < cube2.min.y || cube1.min.y > cube2.max.y) return false;
+    if (cube1.max.z < cube2.min.z || cube1.min.z > cube2.max.z) return false;
     return true;
+}
+
+bool TinyEngine::CheckCollisionAABBSphere(const Cube& cube, const Sphere& spherePosition) {
+    glm::vec3 closestPoint = glm::clamp(spherePosition.center, cube.min, cube.max);
+    float distance = glm::distance(spherePosition.center, closestPoint);
+    return distance < spherePosition.radius;
 }
 
 
@@ -40,15 +49,27 @@ void TinyEngine::initVulkan() {
     swapChain.init(tinyDevice, window.getWindow(), depth);
     pipeline.init(tinyDevice, swapChain);
     command.createCommandPool(tinyDevice);
-    depth.createDepthResources(tinyDevice, command, swapChain, texture);
+    depth.createDepthResources(tinyDevice, command, swapChain, pbrDiffuseTexture);
     swapChain.createFramebuffers(tinyDevice, depth);
-    texture.init(tinyDevice, command, tinyBuffer);
-    loadModel();
+    pbrDiffuseTexture.init(tinyDevice, command, tinyBuffer, PBR_DIFFUSE_TEXTURE_PATH);
+    roughnessTexture.init(tinyDevice, command, tinyBuffer, PBR_TEXTURE_PATH);
+    normalTexture.init(tinyDevice, command, tinyBuffer, NORMAL_TEXTURE_PATH);
+    loadModelAssimp(BALL_MODEL_PATH);
+    loadModelAssimp(PINGUIN_MODEL_PATH);
     tinyBuffer.createVertexBuffer(tinyDevice, command, vertices, tinyBuffer.vertexBuffer, tinyBuffer.vertexBufferMemory);
     tinyBuffer.createIndexBuffer(tinyDevice, command, indices,tinyBuffer.indexBuffer, tinyBuffer.indexBufferMemory);
-    tinyBuffer.createVertexBuffer(tinyDevice, command, modelVertices, tinyBuffer.modelVertexBuffer, tinyBuffer.modelVertexBufferMemory);
-    tinyBuffer.createIndexBuffer(tinyDevice, command, modelIndices, tinyBuffer.modelIndexBuffer, tinyBuffer.modelIndexBufferMemory);
-    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, texture.textureImageView, texture.textureSampler);
+    for (TinyModel& model : models) {
+        tinyBuffer.createVertexBuffer(tinyDevice, command, model.vertices, model.modelVertexBuffer, model.modelVertexBufferMemory);
+        tinyBuffer.createIndexBuffer(tinyDevice, command, model.indices, model.modelIndexBuffer, model.modelIndexBufferMemory);
+    }
+    tinyBuffer.createVertexBuffer(tinyDevice, command, planeVertices, tinyBuffer.planeVertexBuffer, tinyBuffer.planeVertexBufferMemory);
+    tinyBuffer.createIndexBuffer(tinyDevice, command, planeIndices, tinyBuffer.planeIndexBuffer, tinyBuffer.planeIndexBufferMemory);
+    tinyBuffer.createUniformBuffers(tinyDevice, pipeline, { pbrDiffuseTexture.textureImageView},
+        { pbrDiffuseTexture.textureSampler }, 
+        { roughnessTexture.textureImageView },
+        { roughnessTexture.textureSampler },
+        { normalTexture.textureImageView },
+        { normalTexture.textureSampler });
 
     command.createCommandBuffers(tinyDevice);
     tinySync.createSyncObjects(tinyDevice);
@@ -72,23 +93,33 @@ void TinyEngine::mainLoop() {
 
         Cube cube1 = { glm::vec3(-0.8f, -0.8f, -0.8f) + glassContainer, glm::vec3(0.8f, 0.8f, 0.8f) + glassContainer};
         Cube cube2 = { glm::vec3(-0.8f, -0.8f, -0.8f) + secondCube, glm::vec3(0.8f, 0.8f, 0.8f) + secondCube};
-        Sphere sphere = { spherePosition, 0.5f};
+        Sphere sphere1 = { spherePosition, 0.5f};
+        Sphere sphere2 = { spherePosition2, 0.5f};
 
-        if (CheckCollision(cube1, sphere)) {
-            collisionDetectedText = "Collision detected!";
-        }
-        else {
-            collisionDetectedText = "No collision!!";
-        }
-
-        if (secondCubeShown) {
-            if (CheckCollisionAABB(cube1, cube2)) {
-                collisionDetectedText = "Collision detected!";
-            }
-            else {
-                collisionDetectedText = "No collision!!";
-            }
-        }
+        //if (secondCubeShown) {
+        //    if (CheckCollisionAABB(cube1, cube2)) {
+        //        collisionDetectedText = "Collision detected!";
+        //    }
+        //    else {
+        //        collisionDetectedText = "No collision!!";
+        //    }
+        //}
+        //else if (secondSphereShown) {
+        //    if (CheckCollisionSphere(sphere1, sphere2)) {
+        //        collisionDetectedText = "Collision detected!";
+        //    }
+        //    else {
+        //        collisionDetectedText = "No collision!!";
+        //    }
+        //}
+        //else {
+        //    if (CheckCollisionAABBSphere(cube1, sphere1)) {
+        //        collisionDetectedText = "Collision detected!";
+        //    }
+        //    else {
+        //        collisionDetectedText = "No collision!!";
+        //    }
+        //}
 
         
         auto start = std::chrono::high_resolution_clock::now();
@@ -112,53 +143,84 @@ void TinyEngine::mainLoop() {
     vkDeviceWaitIdle(tinyDevice.getDevice());
 }
 
-void TinyEngine::loadModel() {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
+void TinyEngine::loadModelAssimp(const std::string modelPath) {
+    Assimp::Importer importer;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
-        std::cout << "Loading model didn't work!";
+    const aiScene* scene = importer.ReadFile(
+        modelPath,
+        aiProcess_Triangulate |
+        aiProcess_FlipUVs |
+        aiProcess_GenNormals |
+        aiProcess_JoinIdenticalVertices
+    );
+
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
         return;
     }
 
+    TinyModel model;
     std::unordered_map<TinyPipeline::Vertex, uint32_t> uniqueVertices{};
+    processNode(scene->mRootNode, scene, uniqueVertices, model.vertices, model.indices);
 
-    for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            TinyPipeline::Vertex vertex{};
-            vertex.pos = {
-                attrib.vertices[3 * index.vertex_index + 0],
-                attrib.vertices[3 * index.vertex_index + 1],
-                attrib.vertices[3 * index.vertex_index + 2]
+
+    models.push_back(std::move(model));
+}
+
+
+void TinyEngine::processNode(aiNode* node, const aiScene* scene,
+    std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices,
+    std::vector<TinyPipeline::Vertex>& vertices,
+    std::vector<uint32_t>& indices) {
+
+    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        processMesh(mesh, scene, uniqueVertices, vertices, indices);
+    }
+
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        processNode(node->mChildren[i], scene, uniqueVertices, vertices, indices);
+    }
+}
+
+void TinyEngine::processMesh(aiMesh* mesh, const aiScene* scene,
+    std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices,
+    std::vector<TinyPipeline::Vertex>& vertices,
+    std::vector<uint32_t>& indices) {
+
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        TinyPipeline::Vertex vertex{};
+
+        vertex.pos = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+
+        if (mesh->HasNormals()) {
+            vertex.normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+        }
+
+        if (mesh->mTextureCoords[0]) {
+            vertex.texCoord = {
+                mesh->mTextureCoords[0][i].x,
+                1.0f - mesh->mTextureCoords[0][i].y
             };
+        }
 
-            if (!attrib.normals.empty()) {
-                vertex.normal = {
-                    attrib.normals[3 * index.normal_index + 0],
-                    attrib.normals[3 * index.normal_index + 1],
-                    attrib.normals[3 * index.normal_index + 2]
-                };
-            }
+        vertex.color = { 1.0f, 1.0f, 1.0f };
 
-            if (!attrib.texcoords.empty())
-                vertex.texCoord = {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-            };
+        if (uniqueVertices.count(vertex) == 0) {
+            uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+            vertices.push_back(vertex);
+        }
+    }
 
-            vertex.color = { 1.0f, 1.0f, 1.0f };
-
-            if (uniqueVertices.count(vertex) == 0) {
-                uniqueVertices[vertex] = static_cast<uint32_t>(modelVertices.size());
-                modelVertices.push_back(vertex);
-            }
-
-            modelIndices.push_back(uniqueVertices[vertex]);
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+        aiFace face = mesh->mFaces[i];
+        for (unsigned int j = 0; j < face.mNumIndices; j++) {
+            indices.push_back(uniqueVertices[vertices[face.mIndices[j]]]);
         }
     }
 }
+
+
 
 void TinyEngine::drawFrame() {
     vkWaitForFences(tinyDevice.getDevice(), 1, &tinySync.inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -225,7 +287,8 @@ void TinyEngine::cleanup() {
 
     swapChain.cleanup(tinyDevice);
 
-    texture.cleanup(tinyDevice);
+    pbrDiffuseTexture.cleanup(tinyDevice);
+    roughnessTexture.cleanup(tinyDevice);
 
     tinyBuffer.cleanupUniformBuffers(tinyDevice);
 
@@ -265,7 +328,8 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     renderPassInfo.pClearValues = &clearColor;*/
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+    VkClearColorValue clearColor = { { 0.72f, 0.53f, 0.56f, 1.0f } };
+    clearValues[0].color = clearColor;
     clearValues[1].depthStencil = { 1.0f, 0 };
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -294,33 +358,127 @@ void TinyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
     //vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
 
     // Drawing the cube
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube1[currentFrame], 0, nullptr);
-    glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y, glassContainer.z));
-    cubeModel = glm::scale(cubeModel, glm::vec3(0.8f, 0.8f, 0.8f));
-    updateUniformBuffer(currentFrame, cubeModel, true);
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-
-
-    // Drawing the second cube
-    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
-    //glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0, 0));
-    //cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.8f, 0.8f, 0.8f));
-    //updateUniformBuffer2(currentFrame, cubeModel2, true);
+    // vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, 
+    //    &tinyBuffer.descriptorSets[0][currentFrame], 0, nullptr);
+    //glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y, glassContainer.z));
+    //cubeModel = glm::scale(cubeModel, glm::vec3(0.5f, 0.7f, 0.2f));
+    //updateUniformBuffer(0, currentFrame, cubeModel);
     //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-    //secondCubeShown = true;
 
-    // Drawing the sphere model
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.modelVertexBuffer, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSetsCube2[currentFrame], 0, nullptr);
-    glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), spherePosition);
-    sphereModel = glm::scale(sphereModel, glm::vec3(1.2f, 1.2f, 1.2f));
-    updateUniformBuffer2(currentFrame, sphereModel, true);
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(modelIndices.size()), 1, 0, 0, 0);
+
+    //// Drawing the second cube
+    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1,
+    //    &tinyBuffer.descriptorSets[1][currentFrame], 0, nullptr);
+    //glm::mat4 cubeModel2 = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x, glassContainer.y + 1.22, glassContainer.z));
+    //cubeModel2 = glm::scale(cubeModel2, glm::vec3(0.5f, 0.5f, 0.2f));
+    //updateUniformBuffer(1, currentFrame, cubeModel2);
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+
+    //// Drawing the third cube
+    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1,
+    //    &tinyBuffer.descriptorSets[2][currentFrame], 0, nullptr);
+    //glm::mat4 cubeModel3 = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x - 2.5f, glassContainer.y, glassContainer.z));
+    //cubeModel3 = glm::scale(cubeModel3, glm::vec3(0.5f, 0.7f, 0.2f));
+    //updateUniformBuffer(2, currentFrame, cubeModel3);
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+
+    //// Drawing the fourth cube
+    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1,
+    //    &tinyBuffer.descriptorSets[3][currentFrame], 0, nullptr);
+    //glm::mat4 cubeModel4 = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x - 2.5f, glassContainer.y + 1.22, glassContainer.z));
+    //cubeModel4 = glm::scale(cubeModel4, glm::vec3(0.5f, 0.5f, 0.2f));
+    //updateUniformBuffer(3, currentFrame, cubeModel4);
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+
+    //// Drawing the fifth cube
+    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.vertexBuffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1,
+    //    &tinyBuffer.descriptorSets[4][currentFrame], 0, nullptr);
+    //glm::mat4 cubeModel5 = glm::translate(glm::mat4(1.0f), glm::vec3(glassContainer.x -1.15f, glassContainer.y + 2.07, glassContainer.z));
+    //cubeModel5 = glm::scale(cubeModel5, glm::vec3(1.2f, 0.3f, 0.1f));
+    //updateUniformBuffer(4, currentFrame, cubeModel5);
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+
+    // Drawing the penguin model
+  /*  vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
+        0, 1, &tinyBuffer.descriptorSets[5][currentFrame], 0, nullptr);
+    glm::mat4 penguinModel = glm::translate(glm::mat4(1.0f), spherePosition - glm::vec3(0,0.5f, 0));
+    penguinModel = glm::scale(penguinModel, glm::vec3(1.2f, 1.2f, 1.2f));
+    updateUniformBuffer(5,currentFrame, penguinModel);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);*/
+
+    // Drawing the ball
+    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[0].modelVertexBuffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, models[0].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
+    //    0, 1, &tinyBuffer.descriptorSets[6][currentFrame], 0, nullptr);
+    //glm::mat4 sphereModel2 = glm::translate(glm::mat4(1.0f), spherePosition - glm::vec3(0.25,0,1));
+    //sphereModel2 = glm::scale(sphereModel2, glm::vec3(0.3f, 0.3f, 0.3f));
+    //updateUniformBuffer(6, currentFrame, sphereModel2);
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[0].indices.size()), 1, 0, 0, 0);
+
+
+    // Drawing the second penguin model
+    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[1].modelVertexBuffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, models[1].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
+    //    0, 1, &tinyBuffer.descriptorSets[7][currentFrame], 0, nullptr);
+    //glm::mat4 penguinModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(-1, -0.5f,0));
+    //penguinModel2 = glm::scale(penguinModel2, glm::vec3(1.2f, 1.2f, 1.2f));
+    //updateUniformBuffer(7, currentFrame, penguinModel2);
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[1].indices.size()), 1, 0, 0, 0);
+
+    // Drawing the scene stage/plane
+    //vkCmdBindVertexBuffers(commandBuffer, 0, 1, &tinyBuffer.planeVertexBuffer, offsets);
+    //vkCmdBindIndexBuffer(commandBuffer, tinyBuffer.planeIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout,
+    //    0, 1, &tinyBuffer.descriptorSets[7][currentFrame], 0, nullptr);
+    //glm::mat4 sceneStage = glm::translate(glm::mat4(1.0f), spherePosition - glm::vec3(0, 0.75, 0));
+    //sceneStage = glm::scale(sceneStage, glm::vec3(20.0f, 10.5f, 20.5f));
+    //updateUniformBuffer(7, currentFrame, sceneStage);
+    //vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(planeIndices.size()), 1, 0, 0, 0);
+
+    auto startLoadingTime = std::chrono::high_resolution_clock::now();
+
+vkCmdBindVertexBuffers(commandBuffer, 0, 1, &models[0].modelVertexBuffer, offsets);
+vkCmdBindIndexBuffer(commandBuffer, models[0].modelIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+TinyBuffer::UniformBufferObject ubo = updateUniformBuffer();
+
+    for (int i = 0; i < OBJECT_INSTANCES; ++i) {
+    float x = (i % 50) * 2.5f;              // 50 columns
+    float z = (i / 50) * 2.5f;              // 20 rows
+
+    uint32_t dynamicOffset = i * static_cast<uint32_t>(tinyBuffer.dynamicAlignment);
+    
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &tinyBuffer.descriptorSets[currentFrame], 1, &dynamicOffset);
+    glm::mat4 penguinModel2 = glm::translate(glm::mat4(1.0f), spherePosition + glm::vec3(x, -0.5f, z));
+    penguinModel2 = glm::scale(penguinModel2, glm::vec3(1.2f, 1.2f, 1.2f));
+    ubo.model = penguinModel2;
+    //memcpy(tinyBuffer.uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
+    memcpy(static_cast<char*>(tinyBuffer.uniformBuffersMapped[currentFrame]) + dynamicOffset, &ubo, sizeof(ubo));
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(models[0].indices.size()), 1, 0, 0, 0);
+}
+
+    auto endLoadingTime = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double, std::milli> elapsedTime = endLoadingTime - startLoadingTime;
+    loadingTime = elapsedTime.count();
+
 
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 
@@ -349,20 +507,21 @@ void TinyEngine::lookAround(float deltaTime, float xPos, float yPos) {
 
     camera.yaw += 3 * deltaTime  * xPos;
     camera.pitch += 3 * deltaTime  * yPos; 
-
-    if (camera.yaw > 360) {
-        camera.yaw -= 360;
-    }
-
-    if (camera.yaw < -360) {
-        camera.yaw += 360;
-    }
+    
+    if (camera.pitch > 89.0f)
+        camera.pitch = 89.0f;
+    if (camera.pitch < -89.0f)
+        camera.pitch = -89.0f;
 
     glm::vec3 front;
     front.x = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
     front.y = sin(glm::radians(camera.pitch));
     front.z = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
+
     camera.cameraFront = glm::normalize(front);
+
+    camera.Right = glm::normalize(glm::cross(camera.cameraFront, camera.Up));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+    camera.Up = glm::normalize(glm::cross(camera.Right, camera.cameraFront));
 
 }
 void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& input)
@@ -419,8 +578,7 @@ void TinyEngine::gameUpdate(float deltaTime, TinyWindow& window, TinyInput& inpu
 
 
 }
-void TinyEngine::updateUniformBuffer(uint32_t currentImage, 
-    const glm::mat4& modelMatrix, bool useTexture) {
+TinyBuffer::UniformBufferObject TinyEngine::updateUniformBuffer() {
 
     static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -428,51 +586,30 @@ void TinyEngine::updateUniformBuffer(uint32_t currentImage,
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     TinyBuffer::UniformBufferObject ubo{};
-    ubo.model = modelMatrix;
+    //ubo.model = modelMatrix;
 
     glm::vec3 pos(0, 1, -2);
 
     ubo.view = glm::lookAt({ camera.pos },
         glm::vec3(camera.pos) + camera.cameraFront,
-        glm::vec3(0.0f, 1.0f, 0.0f));
+        camera.Up);
 
     ubo.viewPos = glm::vec3(camera.pos);
 
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 100.0f);
 
     ubo.proj[1][1] *= -1;
 
-    memcpy(tinyBuffer.uniformBuffersMappedCube1[currentImage], &ubo, sizeof(ubo));
+    ubo.lightColor = lightColor;
+
+    ubo.lightPos = lightPos;
+
+
+    return ubo;
 
 
 }
 
-void TinyEngine::updateUniformBuffer2(uint32_t currentImage,
-    const glm::mat4& modelMatrix, bool useTexture) {
-
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-    TinyBuffer::UniformBufferObject ubo{};
-    ubo.model = modelMatrix;
-
-    glm::vec3 pos(0, 1, -2);
-
-    ubo.view = glm::lookAt({ camera.pos },
-        glm::vec3(camera.pos) + camera.cameraFront,
-        glm::vec3(0.0f, 1.0f, 0.0f));
-
-    ubo.viewPos = glm::vec3(camera.pos);
-
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.getSwapChainExtent().width / (float)swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
-
-    ubo.proj[1][1] *= -1;
-
-    memcpy(tinyBuffer.uniformBuffersMappedCube2[currentImage], &ubo, sizeof(ubo));
-
-}
 
 void TinyEngine::initImgui()
 {
@@ -540,19 +677,20 @@ void TinyEngine::drawUI()
 
     ImGui::Begin("TinyVulcanoEngine");
 
+    ImGui::Text("Number of objects: %d", OBJECT_INSTANCES);
     ImGui::Text("%.2f FPS", fps);
-    ImGui::Spacing();
-    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), collisionDetectedText.c_str());
+    ImGui::Text("Loading time: %.2f ms", loadingTime);
+    //ImGui::Spacing();
+    //ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), collisionDetectedText.c_str());
     ImGui::Spacing();
 
-    ImGui::DragFloat3("Sphere position", &spherePosition[0], 0.1f);
-    ImGui::DragFloat3("Cube position", &glassContainer[0], 0.1f);
+    ImGui::DragFloat3("Light position", &lightPos[0], 0.2f);
+    ImGui::DragFloat3("Light color", &lightColor[0], 0.2f);
 
-    ImGui::Spacing();
     ImGui::Spacing();
     ImGui::Text("WASDEQ - Move camera");
     ImGui::Text("Right click - Look around");
-    ImGui::Text("Arrows - Move the cube");
+
     ImGui::End();
 
     ImGui::Render();

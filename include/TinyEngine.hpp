@@ -32,9 +32,24 @@
 #include "TinyTexture.hpp"
 #include "TinyDepth.hpp"
 #include "TinySync.hpp"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const std::string MODEL_PATH = RESOURCES_PATH "models/ball.obj";
+const std::string BALL_MODEL_PATH = RESOURCES_PATH "models/sphere.glb";
+const std::string PINGUIN_MODEL_PATH = RESOURCES_PATH "models/pinguin.glb";
+
+//const std::string GLASS_TEXTURE_PATH = RESOURCES_PATH "textures/glass.png";
+//const std::string PINK_TEXTURE_PATH = RESOURCES_PATH "textures/pink.jpg";
+//const std::string CUTE_PINK_TEXTURE_PATH = RESOURCES_PATH "textures/cute_pink.jpg";
+//const std::string FLOOR_TEXTURE_PATH = RESOURCES_PATH "textures/pink_stone.png";
+//const std::string PURPLE_TEXTURE_PATH = RESOURCES_PATH "textures/green_marble.jpg";
+const std::string PBR_TEXTURE_PATH = RESOURCES_PATH "textures/textureMap2.jpg";
+const std::string PBR_DIFFUSE_TEXTURE_PATH = RESOURCES_PATH "textures/textMapDiffuse.jpg";
+const std::string NORMAL_TEXTURE_PATH = RESOURCES_PATH "textures/textureMapNormal.png";
 
 template<> struct hash<TinyPipeline::Vertex> {
     size_t operator()(TinyPipeline::Vertex const& vertex) const {
@@ -47,16 +62,21 @@ template<> struct hash<TinyPipeline::Vertex> {
 
 class TinyEngine {
 
-	glm::vec3 glassContainer = { 1.25f,0,0 };
+	glm::vec3 glassContainer = { 2.5f,0,0 };
 	glm::vec3 spherePosition = glm::vec3(-1.5f, 0, 0);
+	glm::vec3 spherePosition2 = glm::vec3(1.25f, 0, 0);
 	glm::vec3 secondCube = glm::vec3(3.0f, 0, 0);
 	bool secondCubeShown = false;
+	bool secondSphereShown = false;
 
 	struct Camera {
 		float yaw = 90.0f;
 		float pitch = 0.0f;
 		glm::vec3 pos = { 0, 0.5f, -6 };
 		glm::vec3 cameraFront = { 0.0f, 0.0f, 1.0f };
+		glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 Right;
+		glm::vec3 WorldUp;
 	};
 
 	struct Cube {
@@ -67,6 +87,16 @@ class TinyEngine {
 	struct Sphere {
 		glm::vec3 center;
 		float radius;
+	};
+
+	struct TinyModel {
+		std::vector<TinyPipeline::Vertex> vertices;
+		std::vector<uint32_t> indices;
+
+		VkBuffer modelVertexBuffer;
+		VkDeviceMemory modelVertexBufferMemory;
+		VkBuffer modelIndexBuffer;
+		VkDeviceMemory modelIndexBufferMemory;
 	};
 
 
@@ -203,6 +233,18 @@ class TinyEngine {
 	};
 
 
+	std::vector<TinyPipeline::Vertex> planeVertices = {
+	{{-0.5f, 0.0f, -0.5f}, {0, 1, 0}, {0.0f, 0.0f}},
+	{{ 0.5f, 0.0f, -0.5f}, {0, 1, 0}, {1.0f, 0.0f}},
+	{{ 0.5f, 0.0f,  0.5f}, {0, 1, 0}, {1.0f, 1.0f}},
+	{{-0.5f, 0.0f,  0.5f}, {0, 1, 0}, {0.0f, 1.0f}},
+	};
+
+	std::vector<uint32_t> planeIndices = {
+		0, 3, 2, 2, 1, 0
+	};
+
+
 	int frameCount = 0;
 	float fps = 0.0f;
 	float fpsUpdateInterval = 1.0f;
@@ -219,8 +261,7 @@ public:
     TinyPipeline pipeline;
     TinyCommand command;
 
-	std::vector<TinyPipeline::Vertex> modelVertices;
-	std::vector<uint32_t> modelIndices;
+	std::vector<TinyModel> models;
 
     TinySync tinySync;
 
@@ -228,10 +269,19 @@ public:
 
     TinyDepth depth;
 
-    TinyTexture texture;
+    TinyTexture pbrDiffuseTexture;
+    TinyTexture roughnessTexture;
+    TinyTexture normalTexture;
+
     Camera camera;
    
     uint32_t currentFrame = 0;
+
+	float loadingTime = 0.0f;
+
+	glm::vec3 lightPos = glm::vec3(1,7,1);
+	glm::vec3 lightColor = glm::vec3(3);
+
 
     void initVulkan();
 
@@ -239,7 +289,17 @@ public:
 
     void drawFrame();
 
-	void loadModel();
+	void loadModelAssimp(const std::string modelPath);
+
+	void processNode(aiNode* node, const aiScene* scene,
+		std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices,
+		std::vector<TinyPipeline::Vertex>& vertices,
+		std::vector<uint32_t>& indices);
+
+	void processMesh(aiMesh* mesh, const aiScene* scene,
+		std::unordered_map<TinyPipeline::Vertex, uint32_t>& uniqueVertices,
+		std::vector<TinyPipeline::Vertex>& vertices,
+		std::vector<uint32_t>& indices);
 
     void cleanup();
 
@@ -247,8 +307,7 @@ public:
 
     void gameUpdate(float deltaTime, TinyWindow& window, TinyInput& input);
 
-    void updateUniformBuffer(uint32_t currentImage, const glm::mat4& modelMatrix, bool useTexture = false);
-    void updateUniformBuffer2(uint32_t currentImage, const glm::mat4& modelMatrix, bool useTexture = false);
+	TinyBuffer::UniformBufferObject  updateUniformBuffer();
 
     void lookAround(float deltaTime, float xPos, float yPos);
 
@@ -260,8 +319,13 @@ public:
     
     void drawUI();
 
-	bool CheckCollision(const Cube& cube, const Sphere& spherePosition);
+
+	bool CheckCollisionSphere(const Sphere& sphere1, const Sphere& sphere2);
 
 	bool CheckCollisionAABB(const Cube& cube1, const Cube& cube2);
+
+	bool CheckCollisionAABBSphere(const Cube& cube, const Sphere& spherePosition);
+
+
 
 };
