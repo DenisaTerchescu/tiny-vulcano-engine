@@ -19,4 +19,6 @@ My very own graphics engine built in C++ using the Vulkan API just to prove Vulk
   <img src="resources/gifs/showcase.gif" width="600" />
 </p>
 
+## Showcase 2 (_bc i am really proud of my work hehe_)
+![Normal Mapping Screenshot](resources/images/showcase2.PNG)
 
