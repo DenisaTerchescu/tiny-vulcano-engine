@@ -1,4 +1,4 @@
-# tiny-vulcano-engine
+# TinyVulcanoEngine
 My very own graphics engine built in C++ using the Vulkan API just to prove Vulkan is better than OpenGL, enjoyyy xD
 
 ## Showcase 
