@@ -1,6 +1,9 @@
 # tiny-vulcano-engine
 My very own graphics engine built in C++ using the Vulkan API just to prove Vulkan is better than OpenGL, enjoyyy xD
 
+## Showcase
+![Engine Screenshot](resources/images/showcase.PNG)
+
 ## Core functionalities
 * Model loading support via assimp
 * Collision detection
@@ -11,6 +14,5 @@ My very own graphics engine built in C++ using the Vulkan API just to prove Vulk
 * PBR lighting model integration
 * Normal mapping
 
-## Showcase
-![Engine Screenshot](resources/images/showcase.PNG)
+
 
