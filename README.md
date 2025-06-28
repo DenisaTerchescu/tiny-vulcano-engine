@@ -10,6 +10,7 @@ My very own graphics engine built in C++ using the Vulkan API just to prove Vulk
 - [x] Texture support
 - [x] Camera & input system
 - [x] ImGUI interface
+- [x] Dynamic buffering (tough one haha)
 - [x] PBR lighting model integration
 - [x] Normal mapping
 - [ ] Shadow mapping (to be continued)
