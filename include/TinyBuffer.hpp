@@ -10,7 +10,7 @@
 #include "TinyCommand.hpp"
 
 
-const int OBJECT_INSTANCES = 50000;
+const int OBJECT_INSTANCES = 20000;
 
 class TinyBuffer {
 public:
