@@ -12,4 +12,5 @@ My very own graphics engine built in C++ using the Vulkan API just to prove Vulk
 * Normal mapping
 
 ## Showcase
+![Engine Screenshot](resources/images/showcase.PNG)
 
