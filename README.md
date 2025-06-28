@@ -2,7 +2,7 @@
 My very own graphics engine built in C++ using the Vulkan API just to prove Vulkan is better than OpenGL, enjoyyy xD
 
 ## Showcase
-![Engine Screenshot](resources/images/showcase.PNG)
+![Demo Gif](resources/gifs/showcase2.gif)
 
 ## Core functionalities
 * Model loading support via assimp
@@ -14,5 +14,6 @@ My very own graphics engine built in C++ using the Vulkan API just to prove Vulk
 * PBR lighting model integration
 * Normal mapping
 
-
+## Showcase 2 <sub>because I love my work</sub>
+![Engine Screenshot](resources/images/showcase.PNG)
 
